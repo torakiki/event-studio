@@ -1,5 +1,19 @@
 *.class
 
+.classpath
+.project
+.settings/
+target/
+*.iml
+*.ipr
+.idea
+.DS_Store
+
+# Gradle Files #
+################
+.gradle
+.m2
+
 # Package Files #
 *.jar
 *.war

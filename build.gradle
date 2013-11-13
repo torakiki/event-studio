@@ -13,6 +13,10 @@ repositories { maven { url "http://repo.maven.apache.org/maven2" } }
 
 dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
+    compile group: 'net.engio', name: 'mbassador', version:'1.1.7'
+    compile group: 'org.bushe', name: 'eventbus', version:'1.4'
+    compile group: 'net.tribe7.seeds', name: 'seeds-eventbus', version:'14.0.1'
+    compile group: 'org.springframework.amqp', name:'spring-rabbit', version:'1.2.0.RELEASE'
     testCompile group: 'junit', name: 'junit', version:'4.11'
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.0.13'
     testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'

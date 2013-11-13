@@ -60,4 +60,9 @@ class Stations {
     Collection<Station> getStations() {
         return stations.values();
     }
+
+    void clear(String station) {
+        LOG.debug("Clearing station {}", station);
+        stations.remove(station);
+    }
 }

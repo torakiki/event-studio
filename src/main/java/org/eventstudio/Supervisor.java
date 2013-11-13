@@ -17,19 +17,29 @@
  */
 package org.eventstudio;
 
+
 /**
- * A {@link Supervisor} can inspect every message transmitted to every {@link Station} before it's handed over to the {@link Station}
+ * A {@link Supervisor} can inspect every event transmitted to a {@link Station} before it's handed over to the station {@link Listener}s interested in that type of event.
  * 
  * @author Andrea Vacondio
- * @param <T>
- *            type of event the {@link Supervisor} is interested in.
+ * 
  */
-public interface Supervisor<T> {
+public interface Supervisor {
 
     /**
-     * Notify the listener of the given event
+     * Empty implementation of the {@link Supervisor}.
+     */
+    Supervisor SLACKER = new Supervisor() {
+        public void inspect(Object event) {
+            // give me a break!
+        }
+    };
+
+    /**
+     * Inspect the event
      * 
      * @param event
      */
-    void inspect(T event);
+    void inspect(Object event);
+
 }

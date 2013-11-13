@@ -23,9 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.eventstudio.exception.EventStudioException;
-import org.eventstudio.util.ReflectionUtils;
-
 /**
  * A thread-safe holder for the listeners
  * 
@@ -36,18 +33,15 @@ class Listeners {
 
     private ConcurrentMap<Class<?>, CopyOnWriteArraySet<ListenerReferenceHolder>> listeners = new ConcurrentHashMap<Class<?>, CopyOnWriteArraySet<ListenerReferenceHolder>>();
 
-    boolean add(Listener<?> listener, int priority, ReferenceStrength strength) {
-        Class<?> eventClass = ReflectionUtils.inferParameterClass(listener.getClass(), "onEvent");
-        if (eventClass == null) {
-            throw new EventStudioException("Unable to infer the listened event class.");
-        }
+    boolean add(Class<?> eventClass, Listener<?> listener, int priority, ReferenceStrength strength) {
         return getQueue(eventClass).add(
                 new ListenerReferenceHolder(priority, strength.getReference(new DefaultListenerWrapper(listener))));
     }
 
-    boolean unregister(Class<?> eventClass, ListenerWrapper listener) {
+    boolean remove(Class<?> eventClass, ListenerWrapper listener) {
         return getQueue(eventClass).remove(listener);
     }
+
 
     /**
      * @param eventClass

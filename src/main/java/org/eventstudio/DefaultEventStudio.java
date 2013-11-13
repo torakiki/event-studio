@@ -17,11 +17,27 @@
  */
 package org.eventstudio;
 
+import static org.eventstudio.util.RequireUtils.requireNotNull;
+
 /**
+ * Default implementation of {@link EventStudio}. It doesn't enforce a Singleton pattern and it's up to the user to decide how to use it and how many EventStudio the application
+ * needs.
+ * <p>
+ * <b>Hidden Station</b>: The hidden station is a pre-built station with empty name that is used to hide the station abstraction. Helper method are provided by
+ * {@link DefaultEventStudio} where the station name is missing from the parameters list and the {@link DefaultEventStudio#HIDDEN_STATION} is used, providing a more traditional
+ * event bus pub/sub pattern.
+ * </p>
+ * 
  * @author Andrea Vacondio
  * 
  */
 public class DefaultEventStudio implements EventStudio {
+    /**
+     * A reserved station name that is used to hide the station abstraction. Using the provided helper methods the station concept remains totally hidden and {@link EventStudio}
+     * can be used as a more traditional Event Bus with pub/sub pattern.
+     */
+    public static final String HIDDEN_STATION = "";
+
     private Stations stations = new Stations();
 
     public <T> boolean add(Listener<T> listener, String station, int priority, ReferenceStrength strength) {
@@ -32,78 +48,118 @@ public class DefaultEventStudio implements EventStudio {
         return stations.getStation(station).add(listener);
     }
 
-    public <T> boolean supervisor(Supervisor<T> supervisor) {
-        // TODO
-        return true;
+    public <T> boolean add(Class<T> eventClass, Listener<T> listener, String station) {
+        return stations.getStation(station).add(eventClass, listener);
     }
 
-    public <T> void stationSupervisor(StationSupervisor supervisor, String station) {
+    public <T> boolean add(Class<T> eventClass, Listener<T> listener, String station, int priority,
+            ReferenceStrength strength) {
+        return stations.getStation(station).add(eventClass, listener, priority, strength);
+    }
+
+    /**
+     * Adds a {@link Listener} (with the given priority and strength ) to the hidden station listening for the given event class, hiding the station abstraction.
+     * 
+     * @see EventStudio#add(Listener, String, int, ReferenceStrength))
+     * @see DefaultEventStudio#HIDDEN_STATION
+     */
+    public <T> boolean add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
+        return add(eventClass, listener, HIDDEN_STATION, priority, strength);
+    }
+
+    /**
+     * Adds a {@link Listener} (with the given priority and strength ) to the hidden station, hiding the station abstraction.
+     * 
+     * @see EventStudio#add(Listener, String, int, ReferenceStrength))
+     * @see DefaultEventStudio#HIDDEN_STATION
+     */
+    public <T> boolean add(Listener<T> listener, int priority, ReferenceStrength strength) {
+        return add(listener, HIDDEN_STATION, priority, strength);
+    }
+
+    /**
+     * Adds a {@link Listener} to the hidden station, hiding the station abstraction.
+     * 
+     * @see EventStudio#add(Listener, String)
+     * @see DefaultEventStudio#HIDDEN_STATION
+     */
+    public <T> boolean add(Listener<T> listener) {
+        return add(listener, HIDDEN_STATION);
+    }
+
+    /**
+     * Adds a {@link Listener} to the hidden station listening for the given event class, hiding the station abstraction.
+     * 
+     * @see EventStudio#add(Class, Listener, String)
+     * @see DefaultEventStudio#HIDDEN_STATION
+     */
+    public <T> boolean add(Class<T> eventClass, Listener<T> listener) {
+        return add(eventClass, listener, HIDDEN_STATION);
+    }
+
+    /**
+     * Adds a {@link Supervisor} to the hidden station, hiding the station abstraction.
+     * 
+     * @param supervisor
+     * @see EventStudio#supervisor(Supervisor, String)
+     * @see DefaultEventStudio#HIDDEN_STATION
+     */
+    public void supervisor(Supervisor supervisor) {
+        supervisor(supervisor, HIDDEN_STATION);
+    }
+
+    public void supervisor(Supervisor supervisor, String station) {
+        requireNotNull(supervisor);
         stations.getStation(station).supervior(supervisor);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eventstudio.EventStudio#remove(org.eventstudio.Listener, java.lang.String)
-     */
     public <T> boolean remove(Listener<T> listener, String station) {
         // TODO Auto-generated method stub
         return false;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Removes the given listener from the hidden station, hiding the station abstraction.
      * 
-     * @see org.eventstudio.EventStudio#remove(org.eventstudio.Listener)
+     * @return true if the listener was found and removed
+     * @see EventStudio#remove(Listener, String)
+     * @see DefaultEventStudio#HIDDEN_STATION
      */
     public <T> boolean remove(Listener<T> listener) {
-        // TODO Auto-generated method stub
-        return false;
+        return remove(listener, HIDDEN_STATION);
     }
 
-    /*
-     * (non-Javadoc)
+    public void clear(String station) {
+        stations.clear(station);
+    }
+
+    /**
+     * Clears the hidden station
      * 
-     * @see org.eventstudio.EventStudio#clear(java.lang.String)
+     * @see EventStudio#clear(String)
+     * @see DefaultEventStudio#HIDDEN_STATION
      */
-    public boolean clear(String station) {
-        // TODO Auto-generated method stub
-        return false;
+    public void clear() {
+        stations.clear(HIDDEN_STATION);
     }
 
     public void broadcast(Object event, String station) {
         stations.getStation(station).broadcast(event);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Boradcast the event to the hidden station
      * 
-     * @see org.eventstudio.EventStudio#broadcastToEveryStation(java.lang.Object)
+     * @see EventStudio#broadcast(Object, String)
+     * @see DefaultEventStudio#HIDDEN_STATION
      */
-    public boolean broadcastToEveryStation(Object event) {
-        // TODO Auto-generated method stub
-        return false;
+    public void broadcast(Object event) {
+        stations.getStation(HIDDEN_STATION).broadcast(event);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eventstudio.EventStudio#add(java.lang.Class, org.eventstudio.Listener, java.lang.String)
-     */
-    public <T> boolean add(Class<T> eventClass, Listener<T> listener, String station) {
-        // TODO Auto-generated method stub
-        return false;
+    public void broadcastToEveryStation(Object event) {
+        for (Station station : stations.getStations()) {
+            station.broadcast(event);
+        }
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.eventstudio.EventStudio#add(java.lang.Class, org.eventstudio.Listener, java.lang.String, int, org.eventstudio.ReferenceStrength)
-     */
-    public <T> boolean add(Class<T> eventClass, Listener<T> listener, String station, int priority,
-            ReferenceStrength strength) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
 }

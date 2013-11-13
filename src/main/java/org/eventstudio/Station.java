@@ -28,6 +28,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eventstudio.Listeners.ListenerReferenceHolder;
 import org.eventstudio.Listeners.ListenerWrapper;
+import org.eventstudio.exception.EventStudioException;
+import org.eventstudio.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +45,7 @@ class Station {
 
     private ConcurrentMap<Class<?>, BlockingQueue<Object>> queues = new ConcurrentHashMap<Class<?>, BlockingQueue<Object>>();
     private Listeners listeners = new Listeners();
-    private volatile StationSupervisor supervisor = StationSupervisor.SLACKER;
+    private volatile Supervisor supervisor = Supervisor.SLACKER;
     private final String name;
 
     Station(String name) {
@@ -64,9 +66,9 @@ class Station {
     }
 
     public void broadcast(Object event) {
-        LOG.trace("Supervisor {} about to inspect", supervisor);
+        LOG.trace("{}: Supervisor {} about to inspect", this, supervisor);
         supervisor.inspect(event);
-        LOG.trace("Listeners about to listen");
+        LOG.trace("{}: Listeners about to listen", this);
         doBroadcast(event);
     }
 
@@ -77,29 +79,41 @@ class Station {
         for (ListenerReferenceHolder holder : eventListeners) {
             ListenerWrapper listener = holder.getListenerWrapper();
             if (listener != null) {
-                LOG.trace("Notifing event {} to {}", event, listener);
+                LOG.trace("{}: Notifing event {} to {}", this, event, listener);
                 listener.onEvent(enveloped);
             } else {
-                LOG.trace("Unregistering garbage collected listener");
-                listeners.unregister(event.getClass(), listener);
+                LOG.trace("{}: Removing garbage collected listener from the station", this);
+                listeners.remove(event.getClass(), listener);
             }
         }
         if (!enveloped.isNotified()) {
-            LOG.debug("No one is listening for {}, stored for future listeners", event);
+            LOG.debug("{}: No one is listening for {}, stored for future listeners", this, event);
             if (!getQueue(event.getClass()).offer(event)) {
                 // this shouldn't happen since we don't have constraints on stored event queue capacity
-                LOG.warn("Unable to store unlistened event, it's going to be lost {}", event);
+                LOG.warn("{}: Unable to store unlistened event, it's going to be lost {}", this, event);
             }
         }
     }
 
     boolean add(Listener<?> listener, int priority, ReferenceStrength strength) {
-        LOG.trace("Adding listener {} [priority={} strength={}]", listener, priority, strength);
-        return listeners.add(listener, priority, strength);
+        Class<?> eventClass = ReflectionUtils.inferParameterClass(listener.getClass(), "onEvent");
+        if (eventClass == null) {
+            throw new EventStudioException("Unable to infer the listened event class.");
+        }
+        return add(eventClass, listener, priority, strength);
     }
 
     boolean add(Listener<?> listener) {
         return add(listener, 0, ReferenceStrength.STRONG);
+    }
+
+    boolean add(Class<?> eventClass, Listener<?> listener) {
+        return add(eventClass, listener, 0, ReferenceStrength.STRONG);
+    }
+
+    boolean add(Class<?> eventClass, Listener<?> listener, int priority, ReferenceStrength strength) {
+        LOG.trace("{}: Adding listener {} [priority={} strength={}]", this, listener, priority, strength);
+        return listeners.add(eventClass, listener, priority, strength);
     }
 
     /**
@@ -110,7 +124,7 @@ class Station {
 
     }
 
-    public void supervior(StationSupervisor supervisor) {
+    public void supervior(Supervisor supervisor) {
         requireNotNull(supervisor);
         this.supervisor = supervisor;
     }
