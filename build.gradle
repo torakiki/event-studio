@@ -1,0 +1,20 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'org.eventstudio'
+version = '1.0.0.BETA-SNAPSHOT'
+
+description = "A simple even bus implementation providing pub/sub event exchange between components"
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+repositories { maven { url "http://repo.maven.apache.org/maven2" } }
+
+dependencies {
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
+    testCompile group: 'junit', name: 'junit', version:'4.11'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.0.13'
+    testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
+    testCompile group: 'jdepend', name: 'jdepend', version:'2.9.1'
+}
