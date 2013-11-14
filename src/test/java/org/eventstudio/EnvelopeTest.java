@@ -1,6 +1,6 @@
 /* 
  * This file is part of the EventStudio source code
- * Created on 09/nov/2013
+ * Created on 14/nov/2013
  * Copyright 2013 by Andrea Vacondio (andrea.vacondio@gmail.com).
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -17,34 +17,36 @@
  */
 package org.eventstudio;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
- * A {@link Supervisor} can inspect every event transmitted to a {@link Station} before it's handed over to the station {@link Listener}s interested in that type of event.
- * 
  * @author Andrea Vacondio
  * 
  */
-public interface Supervisor {
+public class EnvelopeTest {
 
-    /**
-     * Empty implementation of the {@link Supervisor}.
-     */
-    Supervisor SLACKER = new Supervisor() {
-        public void inspect(Object event) {
-            // give me a break!
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testNull() {
+        new Envelope(null);
+    }
 
-        @Override
-        public String toString() {
-            return "SLACKER";
-        }
-    };
+    @Test
+    public void testGet() {
+        Object message = new Object();
+        Envelope victim = new Envelope(message);
+        assertEquals(message, victim.getEvent());
+    }
 
-    /**
-     * Inspect the event
-     * 
-     * @param event
-     */
-    void inspect(Object event);
-
+    @Test
+    public void isNotified() {
+        Object message = new Object();
+        Envelope victim = new Envelope(message);
+        assertFalse(victim.isNotified());
+        victim.notified();
+        assertTrue(victim.isNotified());
+    }
 }

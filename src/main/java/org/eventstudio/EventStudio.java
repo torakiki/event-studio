@@ -18,8 +18,9 @@
 package org.eventstudio;
 
 /**
- * An {@link EventStudio} is the central place allowing broadcast of events to {@link Listener}s to registered on a {@link Station}. TODO mention thread safe, add expensive, read
- * light
+ * An {@link EventStudio} is a thread-safe central place allowing broadcast of events to {@link Listener}s to registered on a Station. Stations are created internally as soon as a
+ * listener is added but it's up to the user to clear a station when it's not needed anymore. {@link Listener}s can be added multiple times either to different or the same station
+ * and they will be called as many times as they have been added.
  * <p>
  * As a general rule <em>null</em> parameters are not allowed (either station names, listeners, supervisors.. )
  * </p>
@@ -31,26 +32,21 @@ public interface EventStudio {
 
     /**
      * Adds the given {@link Listener} to the given station using default priority(0) ad default strength {@link ReferenceStrength#STRONG}.
-     * 
-     * @return true if the station didn't already contain the {@link Listener}
      */
-    <T> boolean add(Listener<T> listener, String station);
+    <T> void add(Listener<T> listener, String station);
 
     /**
      * Adds the given {@link Listener} to the given station using the given priority (low values mean higher priority) and strength.
-     * 
-     * @return true if the station didn't already contain the {@link Listener}
      */
-    <T> boolean add(Listener<T> listener, String station, int priority, ReferenceStrength strength);
+    <T> void add(Listener<T> listener, String station, int priority, ReferenceStrength strength);
 
     /**
      * Adds the given {@link Listener}, listening for the given event class, to the given station using default priority(0) ad default strength {@link ReferenceStrength#STRONG}.
      * This add method is useful when a listener can listen for a hierarchy of events.
      * 
-     * @return true if the station didn't already contain the {@link Listener}
      * @see EventStudio#add(Class, Listener, String, int, ReferenceStrength)
      */
-    <T> boolean add(Class<T> eventClass, Listener<T> listener, String station);
+    <T> void add(Class<T> eventClass, Listener<T> listener, String station);
 
     /**
      * Adds the given {@link Listener}, listening for the given event class, to the given station using the given priority (low values mean higher priority) and strength. This add
@@ -75,10 +71,8 @@ public interface EventStudio {
      * 
      * }
      * </pre>
-     * 
-     * @return true if the station didn't already contain the {@link Listener}
      */
-    <T> boolean add(Class<T> eventClass, Listener<T> listener, String station, int priority, ReferenceStrength strength);
+    <T> void add(Class<T> eventClass, Listener<T> listener, String station, int priority, ReferenceStrength strength);
 
     /**
      * Sets a {@link Supervisor} for the given station. It will be notified of every event broadcasted to the station prior its delivery to the proper {@link Listener}s allowing
@@ -90,11 +84,18 @@ public interface EventStudio {
     <T> void supervisor(Supervisor supervisor, String station);
 
     /**
-     * Removes the given {@link Listener} from the given station
+     * Removes the first occurrence of the given {@link Listener} from the given station.
      * 
      * @return true if the listener was successfully removed
      */
     <T> boolean remove(Listener<T> listener, String station);
+
+    /**
+     * Removes the first occurrence of the given {@link Listener} listening for the given event, from the given station
+     * 
+     * @return true if the listener was successfully removed
+     */
+    <T> boolean remove(Class<T> eventClass, Listener<T> listener, String station);
 
     /**
      * Clear the given station removing the whole station from the {@link EventStudio} which means that {@link Listener}s and {@link Supervisor} will not be notified anymore. A
@@ -111,6 +112,4 @@ public interface EventStudio {
      * Broadcasts the given event to every station. {@link Listener}s bound to the event class (no matter the station they are listening) will be notified.
      */
     void broadcastToEveryStation(Object event);
-    // TODO async?
-    // TODO something to clean empty stations?
 }

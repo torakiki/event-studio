@@ -1,6 +1,6 @@
 /* 
  * This file is part of the EventStudio source code
- * Created on 09/nov/2013
+ * Created on 14/nov/2013
  * Copyright 2013 by Andrea Vacondio (andrea.vacondio@gmail.com).
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -15,12 +15,36 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License. 
  */
-package org.eventstudio;
+package org.eventstudio.util;
+
+import static org.eventstudio.util.RequireUtils.requireNotBlank;
+import static org.eventstudio.util.RequireUtils.requireNotNull;
+
+import org.junit.Test;
 
 /**
  * @author Andrea Vacondio
  *
  */
-public interface Broadcaster {
+public class RequireUtilsTest {
 
+    @Test(expected = IllegalArgumentException.class)
+    public void nullArg() {
+        requireNotNull(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void blankArg() {
+        requireNotBlank(" ");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void emptyArg() {
+        requireNotBlank("");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullStringArg() {
+        requireNotBlank(null);
+    }
 }

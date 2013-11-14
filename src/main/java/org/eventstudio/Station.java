@@ -17,6 +17,7 @@
  */
 package org.eventstudio;
 
+import static org.eventstudio.util.ReflectionUtils.inferParameterClass;
 import static org.eventstudio.util.RequireUtils.requireNotBlank;
 import static org.eventstudio.util.RequireUtils.requireNotNull;
 
@@ -53,7 +54,7 @@ class Station {
         this.name = name;
     }
 
-    BlockingQueue<Object> getQueue(Class<?> clazz) {
+    private BlockingQueue<Object> getQueue(Class<?> clazz) {
         BlockingQueue<Object> queue = queues.get(clazz);
         if (queue == null) {
             final BlockingQueue<Object> value = new LinkedBlockingQueue<Object>();
@@ -66,6 +67,7 @@ class Station {
     }
 
     public void broadcast(Object event) {
+        requireNotNull(event);
         LOG.trace("{}: Supervisor {} about to inspect", this, supervisor);
         supervisor.inspect(event);
         LOG.trace("{}: Listeners about to listen", this);
@@ -73,8 +75,7 @@ class Station {
     }
 
     private void doBroadcast(Object event) {
-        TreeSet<ListenerReferenceHolder> eventListeners = new TreeSet<ListenerReferenceHolder>(listeners.getQueue(event
-                .getClass()));
+        TreeSet<ListenerReferenceHolder> eventListeners = listeners.nullSafeGetListeners(event.getClass());
         Envelope enveloped = new Envelope(event);
         for (ListenerReferenceHolder holder : eventListeners) {
             ListenerWrapper listener = holder.getListenerWrapper();
@@ -83,11 +84,11 @@ class Station {
                 listener.onEvent(enveloped);
             } else {
                 LOG.trace("{}: Removing garbage collected listener from the station", this);
-                listeners.remove(event.getClass(), listener);
+                listeners.remove(event.getClass(), holder);
             }
         }
         if (!enveloped.isNotified()) {
-            LOG.debug("{}: No one is listening for {}, stored for future listeners", this, event);
+            LOG.debug("{}: No one is listening for {}, enqueuing for future listeners", this, event);
             if (!getQueue(event.getClass()).offer(event)) {
                 // this shouldn't happen since we don't have constraints on stored event queue capacity
                 LOG.warn("{}: Unable to store unlistened event, it's going to be lost {}", this, event);
@@ -95,25 +96,43 @@ class Station {
         }
     }
 
-    boolean add(Listener<?> listener, int priority, ReferenceStrength strength) {
-        Class<?> eventClass = ReflectionUtils.inferParameterClass(listener.getClass(), "onEvent");
+    <T> void add(Listener<T> listener, int priority, ReferenceStrength strength) {
+        requireNotNull(listener);
+        @SuppressWarnings("unchecked")
+        Class<T> eventClass = ReflectionUtils.inferParameterClass(listener.getClass(), "onEvent");
         if (eventClass == null) {
             throw new EventStudioException("Unable to infer the listened event class.");
         }
-        return add(eventClass, listener, priority, strength);
+        add(eventClass, listener, priority, strength);
     }
 
-    boolean add(Listener<?> listener) {
-        return add(listener, 0, ReferenceStrength.STRONG);
-    }
-
-    boolean add(Class<?> eventClass, Listener<?> listener) {
-        return add(eventClass, listener, 0, ReferenceStrength.STRONG);
-    }
-
-    boolean add(Class<?> eventClass, Listener<?> listener, int priority, ReferenceStrength strength) {
+    <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
+        requireNotNull(eventClass);
+        requireNotNull(listener);
         LOG.trace("{}: Adding listener {} [priority={} strength={}]", this, listener, priority, strength);
-        return listeners.add(eventClass, listener, priority, strength);
+        listeners.add(eventClass, listener, priority, strength);
+        BlockingQueue<Object> queue = getQueue(eventClass);
+        Object event = null;
+        while ((event = queue.poll()) != null) {
+            LOG.debug("{}: Found enqueued event {}, now broadcasting it.", this, event);
+            doBroadcast(event);
+        }
+    }
+
+    <T> boolean remove(Listener<T> listener) {
+        requireNotNull(listener);
+        @SuppressWarnings("unchecked")
+        Class<T> eventClass = inferParameterClass(listener.getClass(), "onEvent");
+        if (eventClass == null) {
+            throw new EventStudioException("Unable to infer the listened event class.");
+        }
+        return remove(eventClass, listener);
+    }
+
+    <T> boolean remove(Class<T> eventClass, Listener<T> listener) {
+        requireNotNull(eventClass);
+        requireNotNull(listener);
+        return listeners.remove(eventClass, listener);
     }
 
     /**

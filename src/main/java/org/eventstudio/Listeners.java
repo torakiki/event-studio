@@ -19,9 +19,14 @@ package org.eventstudio;
 
 import static org.eventstudio.util.RequireUtils.requireNotNull;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A thread-safe holder for the listeners
@@ -31,32 +36,115 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 class Listeners {
 
-    private ConcurrentMap<Class<?>, CopyOnWriteArraySet<ListenerReferenceHolder>> listeners = new ConcurrentHashMap<Class<?>, CopyOnWriteArraySet<ListenerReferenceHolder>>();
+    private static final Logger LOG = LoggerFactory.getLogger(Listeners.class);
 
-    boolean add(Class<?> eventClass, Listener<?> listener, int priority, ReferenceStrength strength) {
-        return getQueue(eventClass).add(
-                new ListenerReferenceHolder(priority, strength.getReference(new DefaultListenerWrapper(listener))));
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private Map<Class<?>, LinkedList<ListenerReferenceHolder>> listeners = new HashMap<Class<?>, LinkedList<ListenerReferenceHolder>>();
+
+    <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
+        lock.writeLock().lock();
+        try {
+            LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
+            if (list == null) {
+                list = new LinkedList<ListenerReferenceHolder>();
+                listeners.put(eventClass, list);
+            }
+            list.add(new ListenerReferenceHolder(priority, strength.getReference(new DefaultListenerWrapper(listener))));
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
-    boolean remove(Class<?> eventClass, ListenerWrapper listener) {
-        return getQueue(eventClass).remove(listener);
+    /**
+     * Removes the listener if present. It also removes the listeners set from the map if the set is empty.
+     * 
+     * @param eventClass
+     * @param listener
+     * @return true if the listener was present and has been removed
+     */
+    <T> boolean remove(Class<T> eventClass, Listener<T> listener) {
+        lock.readLock().lock();
+        LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
+        if (list != null) {
+            lock.readLock().unlock();
+            lock.writeLock().lock();
+            try {
+                DefaultListenerWrapper wrapper = new DefaultListenerWrapper(listener);
+                for (ListenerReferenceHolder current : list) {
+                    if (wrapper.equals(current.getListenerWrapper())) {
+                        return removeListenerAndSetIfNeeded(eventClass, current, list);
+                    }
+                }
+            } finally {
+                lock.writeLock().unlock();
+            }
+        }
+        lock.readLock().unlock();
+        return false;
     }
 
+    /**
+     * Removes the listener if present. It also removes the listeners set from the map if the set is empty.
+     * 
+     * @param eventClass
+     * @param listener
+     * @return true if the listener was present and has been removed
+     */
+    boolean remove(Class<?> eventClass, ListenerReferenceHolder listener) {
+        lock.readLock().lock();
+        LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
+        if (list != null) {
+            lock.readLock().unlock();
+            lock.writeLock().lock();
+            try {
+                return removeListenerAndSetIfNeeded(eventClass, listener, list);
+            } finally {
+                lock.writeLock().unlock();
+            }
+        }
+        lock.readLock().unlock();
+        return false;
+    }
+
+    private boolean removeListenerAndSetIfNeeded(Class<?> eventClass, ListenerReferenceHolder listener,
+            LinkedList<ListenerReferenceHolder> list) {
+        if (list.remove(listener)) {
+            if (list.isEmpty()) {
+                listeners.remove(eventClass);
+                LOG.trace("Removed empty listeners set for {}", eventClass);
+            }
+            return true;
+        }
+        return false;
+    }
 
     /**
      * @param eventClass
-     * @return the listeners queue for the given class. It safely creates a new listeners {@link CopyOnWriteArraySet} if does not exist already.
+     * @return A sorted set containing the listeners queue for the given class.
      */
-    CopyOnWriteArraySet<ListenerReferenceHolder> getQueue(Class<?> eventClass) {
-        CopyOnWriteArraySet<ListenerReferenceHolder> queue = listeners.get(eventClass);
-        if (queue == null) {
-            final CopyOnWriteArraySet<ListenerReferenceHolder> value = new CopyOnWriteArraySet<ListenerReferenceHolder>();
-            queue = listeners.putIfAbsent(eventClass, value);
-            if (queue == null) {
-                queue = value;
+    TreeSet<ListenerReferenceHolder> nullSafeGetListeners(Class<?> eventClass) {
+        requireNotNull(eventClass);
+        lock.readLock().lock();
+        LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
+        if (list == null) {
+            lock.readLock().unlock();
+            lock.writeLock().lock();
+            try {
+                list = listeners.get(eventClass);
+                if (list == null) {
+                    list = new LinkedList<ListenerReferenceHolder>();
+                    listeners.put(eventClass, list);
+                }
+                return new TreeSet<ListenerReferenceHolder>(list);
+            } finally {
+                lock.writeLock().unlock();
             }
         }
-        return queue;
+        try {
+            return new TreeSet<ListenerReferenceHolder>(list);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -88,6 +176,26 @@ class Listeners {
             wrapped.onEvent(event.getEvent());
             event.notified();
         }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((wrapped == null) ? 0 : wrapped.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || !(o instanceof DefaultListenerWrapper)) {
+                return false;
+            }
+            DefaultListenerWrapper other = (DefaultListenerWrapper) o;
+            return wrapped.equals(other.wrapped);
+        }
     }
 
     /**
@@ -107,7 +215,17 @@ class Listeners {
         }
 
         public int compareTo(ListenerReferenceHolder o) {
-            return this.priority - o.priority;
+            int retVal = this.priority - o.priority;
+            // same priority
+            if (retVal == 0) {
+                retVal = this.hashCode() - o.hashCode();
+                // same hashcode but not equals. This shouldn't happen but according to hascode documentation is not required and since we don't want ListenerReferenceHolder to
+                // disappear from the TreeSet we return an arbitrary integer != from 0
+                if (retVal == 0 && !this.equals(o)) {
+                    retVal = 1;
+                }
+            }
+            return retVal;
         }
 
         public ListenerWrapper getListenerWrapper() {
