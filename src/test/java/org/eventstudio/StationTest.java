@@ -23,10 +23,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.eventstudio.exception.EventStudioException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 /**
  * @author Andrea Vacondio
@@ -35,8 +38,14 @@ import org.mockito.Mockito;
 public class StationTest {
     private Station victim;
 
+    @Mock
+    private Listener<Object> mockListener;
+    @Mock
+    private Listener<Object> anotherMockListener;
+
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         victim = new Station("victim");
     }
 
@@ -57,9 +66,7 @@ public class StationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void nullEvent() {
-        @SuppressWarnings("unchecked")
-        Listener<Object> mock = Mockito.mock(Listener.class);
-        victim.add(null, mock, 0, ReferenceStrength.WEAK);
+        victim.add(null, mockListener, 0, ReferenceStrength.WEAK);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -77,11 +84,8 @@ public class StationTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void addAndBroadcast() {
         Object event = new Object();
-        Listener<Object> mockListener = Mockito.mock(Listener.class);
-        Listener<Object> anotherMockListener = Mockito.mock(Listener.class);
         victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
         victim.add(Object.class, anotherMockListener, 0, ReferenceStrength.STRONG);
         victim.broadcast(event);
@@ -90,11 +94,8 @@ public class StationTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void priority() {
         Object event = new Object();
-        Listener<Object> mockListener = Mockito.mock(Listener.class);
-        Listener<Object> anotherMockListener = Mockito.mock(Listener.class);
         InOrder inOrder = Mockito.inOrder(anotherMockListener, mockListener);
         victim.add(mockListener, 0, ReferenceStrength.STRONG);
         victim.add(anotherMockListener, -1, ReferenceStrength.STRONG);
@@ -104,21 +105,17 @@ public class StationTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void broadcastAndAdd() {
         Object event = new Object();
         victim.broadcast(event);
         victim.broadcast(event);
-        Listener<Object> mockListener = Mockito.mock(Listener.class);
         victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
         verify(mockListener, times(2)).onEvent(event);
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void removeAndBroadcast() {
         Object event = new Object();
-        Listener<Object> mockListener = Mockito.mock(Listener.class);
         victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
         victim.remove(mockListener);
         victim.broadcast(event);
@@ -126,13 +123,29 @@ public class StationTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void removeExplicitAndBroadcast() {
         Object event = new Object();
-        Listener<Object> mockListener = Mockito.mock(Listener.class);
         victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
         victim.remove(Object.class, mockListener);
         victim.broadcast(event);
         verify(mockListener, never()).onEvent(event);
+    }
+
+    @Test(expected = EventStudioException.class)
+    public void failingAdd() {
+        SecondTestListener<String> listener = new SecondTestListener<String>();
+        victim.add(listener, 0, ReferenceStrength.STRONG);
+    }
+
+    @Test(expected = EventStudioException.class)
+    public void failingRemove() {
+        SecondTestListener<String> listener = new SecondTestListener<String>();
+        victim.remove(listener);
+    }
+
+    private class SecondTestListener<T extends Object> implements Listener<T> {
+        public void onEvent(T event) {
+            // nothing
+        }
     }
 }

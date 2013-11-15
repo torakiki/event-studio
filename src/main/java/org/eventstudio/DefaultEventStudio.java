@@ -21,8 +21,7 @@ import static org.eventstudio.util.RequireUtils.requireNotNull;
 
 /**
  * Default implementation of {@link EventStudio}. It doesn't enforce a Singleton pattern and it's up to the user to decide how to use it and how many EventStudio the application
- * needs. Add and remove operations are expensive and best performances are obtained when the set of {@link Listener}s is relatively stable over time and when the number of
- * {@link Listener}s listening for the same event on the same station is relatively small.
+ * needs.
  * <p>
  * <b>Hidden Station</b>: The hidden station is a pre-built station with <em>"hidden.station"</em> name that is used to hide the station abstraction. Helper method are provided by
  * {@link DefaultEventStudio} where the station name parameter is missing from the parameters list and the {@link DefaultEventStudio#HIDDEN_STATION} is used, providing a more
@@ -119,7 +118,7 @@ public class DefaultEventStudio implements EventStudio {
     }
 
     public <T> boolean remove(Class<T> eventClass, Listener<T> listener, String station) {
-        return stations.getStation(station).remove(listener);
+        return stations.getStation(station).remove(eventClass, listener);
     }
 
     /**

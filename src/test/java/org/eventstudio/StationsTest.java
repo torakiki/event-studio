@@ -40,6 +40,11 @@ public class StationsTest {
         assertNotNull(victim.getStation("ChuckNorris"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void notBlank() {
+        victim.getStation(" ");
+    }
+
     @Test
     public void same() {
         Station one = victim.getStation("ChuckNorris");

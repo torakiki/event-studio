@@ -19,8 +19,6 @@ package org.eventstudio;
 
 import static org.eventstudio.util.RequireUtils.requireNotNull;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * Hold an event and the state of its notification
  * 
@@ -28,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 
  */
 class Envelope {
-    private AtomicBoolean notified = new AtomicBoolean(false);
+    private boolean notified = false;
     private Object event;
 
     Envelope(Object event) {
@@ -40,7 +38,7 @@ class Envelope {
      * @return true if some listeners has been notified
      */
     public boolean isNotified() {
-        return notified.get();
+        return notified;
     }
 
     public Object getEvent() {
@@ -51,7 +49,7 @@ class Envelope {
      * set this event as notified
      */
     public void notified() {
-        this.notified.set(true);
+        this.notified = true;
     }
 
 }

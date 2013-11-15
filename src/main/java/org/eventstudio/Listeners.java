@@ -75,6 +75,7 @@ class Listeners {
                         return removeListenerAndSetIfNeeded(eventClass, current, list);
                     }
                 }
+                return false;
             } finally {
                 lock.writeLock().unlock();
             }

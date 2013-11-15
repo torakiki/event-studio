@@ -17,6 +17,8 @@
  */
 package org.eventstudio;
 
+import static org.eventstudio.util.RequireUtils.requireNotBlank;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -39,8 +41,11 @@ class Stations {
     /**
      * @param stationName
      * @return the station with the given name. It safely creates a new {@link Station} if a station with the given name does not exist.
+     * @throws IllegalArgumentException
+     *             if the station name is blank or null
      */
     Station getStation(String stationName) {
+        requireNotBlank(stationName);
         Station station = stations.get(stationName);
         if (station == null) {
             final Station value = new Station(stationName);
