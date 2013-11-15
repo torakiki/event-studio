@@ -17,6 +17,7 @@
  */
 package org.eventstudio;
 
+
 /**
  * An {@link EventStudio} is a thread-safe central place allowing broadcast of events to {@link Listener}s to registered on a Station. Stations are created internally as soon as a
  * listener is added but it's up to the user to clear a station when it's not needed anymore. {@link Listener}s can be added multiple times either to different or the same station
@@ -73,6 +74,15 @@ public interface EventStudio {
      * </pre>
      */
     <T> void add(Class<T> eventClass, Listener<T> listener, String station, int priority, ReferenceStrength strength);
+
+    /**
+     * Discovers annotated method on the the given bean and adds them as {@link Listener}s
+     * 
+     * @param bean
+     * @see org.eventstudio.annotation.EventListener
+     * @see org.eventstudio.annotation.EventStation
+     */
+    void addAnnotatedListeners(Object bean);
 
     /**
      * Sets a {@link Supervisor} for the given station. It will be notified of every event broadcasted to the station prior its delivery to the proper {@link Listener}s allowing

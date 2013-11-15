@@ -1,6 +1,6 @@
 /* 
  * This file is part of the EventStudio source code
- * Created on 12/nov/2013
+ * Created on 15/nov/2013
  * Copyright 2013 by Andrea Vacondio (andrea.vacondio@gmail.com).
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -15,43 +15,34 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License. 
  */
-package org.eventstudio;
-
-import static org.eventstudio.util.RequireUtils.requireNotNull;
+package org.eventstudio.util;
 
 /**
- * Hold an event and the state of its notification
+ * Simple utility methods {@link String} related.
  * 
  * @author Andrea Vacondio
  * 
  */
-class Envelope {
-    private boolean notified = false;
-    private Object event;
+public final class StringUtils {
 
-    Envelope(Object event) {
-        requireNotNull(event);
-        this.event = event;
+    private StringUtils() {
+        // utility
+    }
+
+    public static boolean isBlank(String input) {
+        return input == null || input.trim().length() <= 0;
+    }
+
+    public static boolean isNotBlank(String input) {
+        return !isBlank(input);
     }
 
     /**
-     * @return true if some listeners has been notified
+     * @param input
+     * @param defaultValue
+     * @return the unchanged input if it's not blank, the default value otherwise
      */
-    public boolean isNotified() {
-        return notified;
+    public static String defaultString(String input, String defaultValue) {
+        return StringUtils.isBlank(input) ? defaultValue : input;
     }
-
-    public Object getEvent() {
-        return event;
-    }
-
-    /**
-     * set this event as notified
-     */
-    public void notified() {
-        if (!notified) {
-            this.notified = true;
-        }
-    }
-
 }

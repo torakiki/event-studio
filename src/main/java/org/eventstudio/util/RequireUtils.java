@@ -16,7 +16,7 @@
  * limitations under the License. 
  */
 package org.eventstudio.util;
-
+import static org.eventstudio.util.StringUtils.isBlank;
 /**
  * Utility class with some helper method to check validity of input arguments
  * 
@@ -37,7 +37,7 @@ public final class RequireUtils {
      *             if the input is blank
      */
     public static void requireNotBlank(String victim) {
-        if (victim == null || victim.trim().length() <= 0) {
+        if (isBlank(victim)) {
             throw new IllegalArgumentException("The input string cannot be blank");
         }
     }

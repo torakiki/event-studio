@@ -1,6 +1,6 @@
 /* 
  * This file is part of the EventStudio source code
- * Created on 12/nov/2013
+ * Created on 15/nov/2013
  * Copyright 2013 by Andrea Vacondio (andrea.vacondio@gmail.com).
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -17,41 +17,34 @@
  */
 package org.eventstudio;
 
-import static org.eventstudio.util.RequireUtils.requireNotNull;
-
 /**
- * Hold an event and the state of its notification
+ * Singleton pattern providing lazy initialization.
  * 
  * @author Andrea Vacondio
  * 
  */
-class Envelope {
-    private boolean notified = false;
-    private Object event;
+public final class StaticStudio {
 
-    Envelope(Object event) {
-        requireNotNull(event);
-        this.event = event;
+    private StaticStudio() {
+        // hide
+    }
+
+    public static DefaultEventStudio eventStudio() {
+        return DefaultEventStudioHolder.STUDIO;
     }
 
     /**
-     * @return true if some listeners has been notified
+     * Lazy initialization
+     * 
+     * @author Andrea Vacondio
+     * 
      */
-    public boolean isNotified() {
-        return notified;
-    }
+    private static final class DefaultEventStudioHolder {
 
-    public Object getEvent() {
-        return event;
-    }
-
-    /**
-     * set this event as notified
-     */
-    public void notified() {
-        if (!notified) {
-            this.notified = true;
+        private DefaultEventStudioHolder() {
+            // hide constructor
         }
-    }
 
+        static final DefaultEventStudio STUDIO = new DefaultEventStudio();
+    }
 }

@@ -19,12 +19,18 @@ package org.eventstudio;
 
 import static org.eventstudio.util.RequireUtils.requireNotNull;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eventstudio.Annotations.ReflectiveListenerDescriptor;
+import org.eventstudio.exception.EventStudioException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,20 +45,46 @@ class Listeners {
     private static final Logger LOG = LoggerFactory.getLogger(Listeners.class);
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private Map<Class<?>, LinkedList<ListenerReferenceHolder>> listeners = new HashMap<Class<?>, LinkedList<ListenerReferenceHolder>>();
+    private Map<Class<?>, TreeSet<ListenerReferenceHolder>> listeners = new HashMap<Class<?>, TreeSet<ListenerReferenceHolder>>();
 
     <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
         lock.writeLock().lock();
         try {
-            LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
-            if (list == null) {
-                list = new LinkedList<ListenerReferenceHolder>();
-                listeners.put(eventClass, list);
-            }
-            list.add(new ListenerReferenceHolder(priority, strength.getReference(new DefaultListenerWrapper(listener))));
+            TreeSet<ListenerReferenceHolder> set = nullSafeGetListenerHolders(eventClass);
+            set.add(new ListenerReferenceHolder(priority, strength.getReference(new DefaultListenerWrapper(listener))));
         } finally {
             lock.writeLock().unlock();
         }
+    }
+
+    public Set<Class<?>> addAll(Object bean, List<ReflectiveListenerDescriptor> descriptors) {
+        Set<Class<?>> updatedEventClasses = new HashSet<Class<?>>();
+        lock.writeLock().lock();
+        try {
+            for(ReflectiveListenerDescriptor current: descriptors){
+                Class<?> eventClass = current.getMethod().getParameterTypes()[0];
+                TreeSet<ListenerReferenceHolder> set = nullSafeGetListenerHolders(eventClass);
+                set.add(new ListenerReferenceHolder(current.getListenerAnnotation().priority(), current
+                        .getListenerAnnotation().strength()
+                        .getReference(
+                        new ReflectiveListenerWrapper(bean, current.getMethod()))));
+                updatedEventClasses.add(eventClass);
+            }
+            
+        } finally {
+            lock.writeLock().unlock();
+        }
+        return updatedEventClasses;
+    }
+
+
+    private TreeSet<ListenerReferenceHolder> nullSafeGetListenerHolders(Class<?> eventClass) {
+        TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
+        if (set == null) {
+            set = new TreeSet<ListenerReferenceHolder>();
+            listeners.put(eventClass, set);
+        }
+        return set;
     }
 
     /**
@@ -64,15 +96,15 @@ class Listeners {
      */
     <T> boolean remove(Class<T> eventClass, Listener<T> listener) {
         lock.readLock().lock();
-        LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
-        if (list != null) {
+        TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
+        if (set != null) {
             lock.readLock().unlock();
             lock.writeLock().lock();
             try {
                 DefaultListenerWrapper wrapper = new DefaultListenerWrapper(listener);
-                for (ListenerReferenceHolder current : list) {
+                for (ListenerReferenceHolder current : set) {
                     if (wrapper.equals(current.getListenerWrapper())) {
-                        return removeListenerAndSetIfNeeded(eventClass, current, list);
+                        return removeListenerAndSetIfNeeded(eventClass, current, set);
                     }
                 }
                 return false;
@@ -93,12 +125,12 @@ class Listeners {
      */
     boolean remove(Class<?> eventClass, ListenerReferenceHolder listener) {
         lock.readLock().lock();
-        LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
-        if (list != null) {
+        TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
+        if (set != null) {
             lock.readLock().unlock();
             lock.writeLock().lock();
             try {
-                return removeListenerAndSetIfNeeded(eventClass, listener, list);
+                return removeListenerAndSetIfNeeded(eventClass, listener, set);
             } finally {
                 lock.writeLock().unlock();
             }
@@ -108,9 +140,9 @@ class Listeners {
     }
 
     private boolean removeListenerAndSetIfNeeded(Class<?> eventClass, ListenerReferenceHolder listener,
-            LinkedList<ListenerReferenceHolder> list) {
-        if (list.remove(listener)) {
-            if (list.isEmpty()) {
+            TreeSet<ListenerReferenceHolder> set) {
+        if (set.remove(listener)) {
+            if (set.isEmpty()) {
                 listeners.remove(eventClass);
                 LOG.trace("Removed empty listeners set for {}", eventClass);
             }
@@ -126,23 +158,23 @@ class Listeners {
     TreeSet<ListenerReferenceHolder> nullSafeGetListeners(Class<?> eventClass) {
         requireNotNull(eventClass);
         lock.readLock().lock();
-        LinkedList<ListenerReferenceHolder> list = listeners.get(eventClass);
-        if (list == null) {
+        TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
+        if (set == null) {
             lock.readLock().unlock();
             lock.writeLock().lock();
             try {
-                list = listeners.get(eventClass);
-                if (list == null) {
-                    list = new LinkedList<ListenerReferenceHolder>();
-                    listeners.put(eventClass, list);
+                set = listeners.get(eventClass);
+                if (set == null) {
+                    set = new TreeSet<ListenerReferenceHolder>();
+                    listeners.put(eventClass, set);
                 }
-                return new TreeSet<ListenerReferenceHolder>(list);
+                return set;
             } finally {
                 lock.writeLock().unlock();
             }
         }
         try {
-            return new TreeSet<ListenerReferenceHolder>(list);
+            return set;
         } finally {
             lock.readLock().unlock();
         }
@@ -169,7 +201,6 @@ class Listeners {
         private Listener wrapped;
 
         private DefaultListenerWrapper(Listener wrapped) {
-            requireNotNull(wrapped);
             this.wrapped = wrapped;
         }
 
@@ -200,6 +231,34 @@ class Listeners {
     }
 
     /**
+     * Reflective invocation of an annotated listener
+     * 
+     * @author Andrea Vacondio
+     * 
+     */
+    private static final class ReflectiveListenerWrapper implements ListenerWrapper {
+        private Object bean;
+        private Method method;
+
+        public ReflectiveListenerWrapper(Object bean, Method method) {
+            this.bean = bean;
+            this.method = method;
+            this.method.setAccessible(true);
+        }
+
+        public void onEvent(Envelope event) {
+            try {
+                method.invoke(bean, event.getEvent());
+            } catch (IllegalAccessException e) {
+                throw new EventStudioException("Exception invoking reflective method", e);
+            } catch (InvocationTargetException e) {
+                throw new EventStudioException("Reflective method invocation exception", e);
+            }
+            event.notified();
+        }
+    }
+
+    /**
      * Holder for a {@link ListenerWrapper}
      * 
      * @author Andrea Vacondio
@@ -223,7 +282,7 @@ class Listeners {
                 // same hashcode but not equals. This shouldn't happen but according to hascode documentation is not required and since we don't want ListenerReferenceHolder to
                 // disappear from the TreeSet we return an arbitrary integer != from 0
                 if (retVal == 0 && !this.equals(o)) {
-                    retVal = 1;
+                    retVal = -1;
                 }
             }
             return retVal;
@@ -233,5 +292,4 @@ class Listeners {
             return reference.get();
         }
     }
-
 }

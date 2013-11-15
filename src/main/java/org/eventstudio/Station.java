@@ -21,12 +21,15 @@ import static org.eventstudio.util.ReflectionUtils.inferParameterClass;
 import static org.eventstudio.util.RequireUtils.requireNotBlank;
 import static org.eventstudio.util.RequireUtils.requireNotNull;
 
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.eventstudio.Annotations.ReflectiveListenerDescriptor;
 import org.eventstudio.Listeners.ListenerReferenceHolder;
 import org.eventstudio.Listeners.ListenerWrapper;
 import org.eventstudio.exception.EventStudioException;
@@ -111,7 +114,20 @@ class Station {
         requireNotNull(listener);
         LOG.trace("{}: Adding listener {} [priority={} strength={}]", this, listener, priority, strength);
         listeners.add(eventClass, listener, priority, strength);
-        BlockingQueue<Object> queue = getQueue(eventClass);
+        broadcastEnqueuedEventsFor(eventClass);
+    }
+
+    void addAll(Object bean, List<ReflectiveListenerDescriptor> descriptors) {
+        requireNotNull(descriptors);
+        LOG.trace("{}: Adding {} reflective listeners for {}", this, descriptors.size(), bean);
+        Set<Class<?>> updatedEventClasses = listeners.addAll(bean, descriptors);
+        for (Class<?> updatedClass : updatedEventClasses) {
+            broadcastEnqueuedEventsFor(updatedClass);
+        }
+    }
+
+    private void broadcastEnqueuedEventsFor(Class<?> updatedClass) {
+        BlockingQueue<Object> queue = getQueue(updatedClass);
         Object event = null;
         while ((event = queue.poll()) != null) {
             LOG.debug("{}: Found enqueued event {}, now broadcasting it.", this, event);

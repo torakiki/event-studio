@@ -18,10 +18,32 @@
 package org.eventstudio;
 
 import static org.eventstudio.util.RequireUtils.requireNotNull;
+import static org.eventstudio.util.StringUtils.defaultString;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map.Entry;
+
+import org.eventstudio.Annotations.ReflectiveListenerDescriptor;
+import org.eventstudio.Annotations.ReflectiveMetadata;
+import org.eventstudio.exception.EventStudioException;
 
 /**
  * Default implementation of {@link EventStudio}. It doesn't enforce a Singleton pattern and it's up to the user to decide how to use it and how many EventStudio the application
- * needs.
+ * needs. A singleton implementation with lazy initialization is provided with {@link org.eventstudio.StaticStudio} where the typical usage is:
+ * 
+ * <pre>
+ * {@code
+ * import static org.eventstudio.StaticStudio.eventStudio;
+ * 
+ * public class Foo{
+ *     void doSomethingAndNotify(){
+ *        .....
+ *        eventStudio.broadcast(new ImFinished(), "station");
+ *     } 
+ * }
+ * }
+ * </pre>
  * <p>
  * <b>Hidden Station</b>: The hidden station is a pre-built station with <em>"hidden.station"</em> name that is used to hide the station abstraction. Helper method are provided by
  * {@link DefaultEventStudio} where the station name parameter is missing from the parameters list and the {@link DefaultEventStudio#HIDDEN_STATION} is used, providing a more
@@ -55,6 +77,21 @@ public class DefaultEventStudio implements EventStudio {
     public <T> void add(Class<T> eventClass, Listener<T> listener, String station, int priority,
             ReferenceStrength strength) {
         stations.getStation(station).add(eventClass, listener, priority, strength);
+    }
+
+    public void addAnnotatedListeners(Object bean) {
+        try {
+            ReflectiveMetadata metadata = Annotations.process(bean);
+            for (Entry<String, List<ReflectiveListenerDescriptor>> current : metadata.getDescriptors().entrySet()) {
+                String station = defaultString(metadata.getStation(), HIDDEN_STATION);
+                stations.getStation(defaultString(current.getKey(), station)).addAll(bean, current.getValue());
+            }
+        } catch (IllegalAccessException e) {
+            throw new EventStudioException("An error occurred processing the input bean", e);
+        } catch (InvocationTargetException e) {
+            throw new EventStudioException("An error occurred processing the input bean", e);
+        }
+
     }
 
     /**
