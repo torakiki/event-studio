@@ -17,7 +17,7 @@ Working on a rich client software that can have multiple modules/plugins and:
 + I wanted listeners to be able to define at runtime what module they belong to. The idea was to create components (e.g. a SpecializedComboBox) listening for events (e.g. DisableEvent) and be able to reuse those components in different modules. I couldn't use the classical annotation approach with some topic/filter static value since every new instance of the component needed to be registered as listener for the module creating it.
 
 #### Enter the Station
-The solution I found was to mimic a network of radio stations. For those familiar with [RabbitMQ](http://www.rabbitmq.com/), the architecture is loosely resembling a [DirectExchange](http://www.rabbitmq.com/tutorials/tutorial-four-java.html) where the events class is the binding key.
+The solution I found was to mimic a network of radio stations. For those familiar with [RabbitMQ](http://www.rabbitmq.com/), the architecture is loosely resembling a [DirectExchange](http://www.rabbitmq.com/tutorials/tutorial-four-java.html) where the event class is the binding key.
 
 TODO Image
 
@@ -26,7 +26,7 @@ Listeners registers themselves on a station for a specific event class and publi
 
 Features/Characteristics
 ---------
-+ Minimal dependencies (slf4j)
++ Minimal dependencies ([slf4j](http://www.slf4j.org/))
 + Thread safe
 + Fully unit tested
 + Fully documented
@@ -162,7 +162,7 @@ and add the pojo to EventStudio. No `Station` is specified, traditional Pub/Sub.
  }
 ```
 ###Annotation+Station with runtime name
-You can specify the `Station` name of an annotated method or the `Station` name for all the annotated method of a pojo. `Station` names defined on annotated methods have precedence over the pojo `Station` definition. `Enum` and `String` values can be used as station name.
+You can specify the `Station` name of an annotated method or the `Station` name for all the annotated methods of a pojo. `Station` names defined on annotated methods have precedence over the pojo `Station` definition. `Enum` and `String` values can be used as station name.
 ```
 public class Foo {
         @EventStation
@@ -199,9 +199,16 @@ public class SpecializedComboBox {
         }
     }
 ```
-and add the pojo to EventStudio.
+and add the pojo to EventStudio:
 ``` 
  public void addAnnotated() {
     eventStudio().addAnnotatedListeners(new SpecializedComboBox("ModuleA"));
+    eventStudio().addAnnotatedListeners(new SpecializedComboBox("ModuleB"));
+ }
+```
+and broadcast event to the module:
+``` 
+ public void disableA() {
+    eventStudio().broadcast(new DisableEvent(), "ModuleA");
  }
 ```
