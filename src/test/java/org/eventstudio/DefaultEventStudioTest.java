@@ -17,18 +17,20 @@
  */
 package org.eventstudio;
 
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eventstudio.Annotations.ReflectiveListenerDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 /**
  * @author Andrea Vacondio
  * 
@@ -37,7 +39,7 @@ public class DefaultEventStudioTest {
 
     private static final String STATION = "station";
     @Mock
-    private Station station, hidden;
+    private Station anotherStation, station, hidden;
     @Mock
     private Stations stations;
     @Mock
@@ -54,6 +56,7 @@ public class DefaultEventStudioTest {
         MockitoAnnotations.initMocks(this);
         when(stations.getStation(DefaultEventStudio.HIDDEN_STATION)).thenReturn(hidden);
         when(stations.getStation(STATION)).thenReturn(station);
+        when(stations.getStation("anotherStation")).thenReturn(anotherStation);
         List<Station> stationsCollection = new ArrayList<Station>();
         stationsCollection.add(hidden);
         stationsCollection.add(station);
@@ -194,5 +197,15 @@ public class DefaultEventStudioTest {
         victim.broadcastToEveryStation(event);
         verify(hidden).broadcast(event);
         verify(station).broadcast(event);
+    }
+
+    @Test
+    public void addAnnotatedListeners() {
+        TestAnnotatedBean bean = new TestAnnotatedBean();
+        victim.addAnnotatedListeners(bean);
+        verify(stations).getStation(STATION);
+        verify(stations).getStation("anotherStation");
+        verify(station).addAll(eq(bean), anyListOf(ReflectiveListenerDescriptor.class));
+        verify(anotherStation).addAll(eq(bean), anyListOf(ReflectiveListenerDescriptor.class));
     }
 }

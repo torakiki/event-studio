@@ -20,9 +20,13 @@ package org.eventstudio;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.eventstudio.Annotations.ReflectiveMetadata;
 import org.eventstudio.exception.EventStudioException;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +46,8 @@ public class StationTest {
     private Listener<Object> mockListener;
     @Mock
     private Listener<Object> anotherMockListener;
+    @Mock
+    private Object bean;
 
     @Before
     public void setUp() {
@@ -74,6 +80,11 @@ public class StationTest {
         victim.broadcast(null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void nullAddAll() {
+        victim.addAll(bean, null);
+    }
+
     @Test
     public void supervisor() {
         Supervisor supervisor = mock(Supervisor.class);
@@ -94,6 +105,18 @@ public class StationTest {
     }
 
     @Test
+    public void annotatedAddAndBroadcast() throws IllegalAccessException, InvocationTargetException {
+        Object event = new Object();
+        TestPrioritizedAnnotatedBean bean = new TestPrioritizedAnnotatedBean();
+        ReflectiveMetadata metadata = Annotations.process(bean);
+        TestPrioritizedAnnotatedBean spy = spy(bean);
+        victim.addAll(spy, metadata.getDescriptors().get(""));
+        victim.broadcast(event);
+        verify(spy).first(event);
+        verify(spy).second(event);
+    }
+
+    @Test
     public void priority() {
         Object event = new Object();
         InOrder inOrder = Mockito.inOrder(anotherMockListener, mockListener);
@@ -111,6 +134,18 @@ public class StationTest {
         victim.broadcast(event);
         victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
         verify(mockListener, times(2)).onEvent(event);
+    }
+
+    @Test
+    public void broadcastAndAddAnnotated() throws IllegalAccessException, InvocationTargetException {
+        Object event = new Object();
+        victim.broadcast(event);
+        TestPrioritizedAnnotatedBean bean = new TestPrioritizedAnnotatedBean();
+        ReflectiveMetadata metadata = Annotations.process(bean);
+        TestPrioritizedAnnotatedBean spy = spy(bean);
+        victim.addAll(spy, metadata.getDescriptors().get(""));
+        verify(spy).first(event);
+        verify(spy).second(event);
     }
 
     @Test
