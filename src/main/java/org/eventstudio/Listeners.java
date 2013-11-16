@@ -21,6 +21,8 @@ import static org.eventstudio.util.RequireUtils.requireNotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,22 +63,20 @@ class Listeners {
         Set<Class<?>> updatedEventClasses = new HashSet<Class<?>>();
         lock.writeLock().lock();
         try {
-            for(ReflectiveListenerDescriptor current: descriptors){
+            for (ReflectiveListenerDescriptor current : descriptors) {
                 Class<?> eventClass = current.getMethod().getParameterTypes()[0];
                 TreeSet<ListenerReferenceHolder> set = nullSafeGetListenerHolders(eventClass);
                 set.add(new ListenerReferenceHolder(current.getListenerAnnotation().priority(), current
                         .getListenerAnnotation().strength()
-                        .getReference(
-                        new ReflectiveListenerWrapper(bean, current.getMethod()))));
+                        .getReference(new ReflectiveListenerWrapper(bean, current.getMethod()))));
                 updatedEventClasses.add(eventClass);
             }
-            
+
         } finally {
             lock.writeLock().unlock();
         }
         return updatedEventClasses;
     }
-
 
     private TreeSet<ListenerReferenceHolder> nullSafeGetListenerHolders(Class<?> eventClass) {
         TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
@@ -155,26 +155,15 @@ class Listeners {
      * @param eventClass
      * @return A sorted set containing the listeners queue for the given class.
      */
-    TreeSet<ListenerReferenceHolder> nullSafeGetListeners(Class<?> eventClass) {
+    List<ListenerReferenceHolder> nullSafeGetListeners(Class<?> eventClass) {
         requireNotNull(eventClass);
         lock.readLock().lock();
-        TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
-        if (set == null) {
-            lock.readLock().unlock();
-            lock.writeLock().lock();
-            try {
-                set = listeners.get(eventClass);
-                if (set == null) {
-                    set = new TreeSet<ListenerReferenceHolder>();
-                    listeners.put(eventClass, set);
-                }
-                return set;
-            } finally {
-                lock.writeLock().unlock();
-            }
-        }
         try {
-            return set;
+            TreeSet<ListenerReferenceHolder> set = listeners.get(eventClass);
+            if (set == null) {
+                return Collections.emptyList();
+            }
+            return new ArrayList<ListenerReferenceHolder>(set);
         } finally {
             lock.readLock().unlock();
         }

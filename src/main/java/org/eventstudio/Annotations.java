@@ -53,7 +53,7 @@ final class Annotations {
         LOG.trace("Processing {} for annotated listeners", bean);
         String station = getStationNameFromFieldIfAny(bean);
         ReflectiveMetadata metadata = new ReflectiveMetadata();
-        for (Method method : bean.getClass().getMethods()) {
+        for (Method method : bean.getClass().getDeclaredMethods()) {
             if (isBlank(station)) {
                 station = getStationNameIfAnnotated(method, bean);
             }
@@ -64,7 +64,7 @@ final class Annotations {
                     throw new EventStudioException(
                             "@EventListener annotated method expected to be a single parameter method");
                 }
-                LOG.trace("Found @EventListener annotate method {}", method);
+                LOG.trace("Found @EventListener annotated method {}", method);
                 metadata.put(listenerAnnotation.station(), new ReflectiveListenerDescriptor(
                         listenerAnnotation, method));
             }
@@ -79,7 +79,8 @@ final class Annotations {
             if (method.getParameterTypes().length > 0) {
                 throw new EventStudioException("@EventStation annotated method expected to be a no parameters method.");
             }
-            LOG.trace("Found @EventStation annotate method {}", method);
+            method.setAccessible(true);
+            LOG.trace("Found @EventStation annotated method {}", method);
             if (method.getReturnType().isEnum()) {
                 return method.invoke(bean).toString();
             }
@@ -96,10 +97,12 @@ final class Annotations {
     private static String getStationNameFromFieldIfAny(Object bean) throws IllegalAccessException {
         for (Field field : bean.getClass().getDeclaredFields()) {
             if (field.getAnnotation(EventStation.class) != null) {
-                if (field.isEnumConstant()) {
-                    return field.get(bean).toString();
+                field.setAccessible(true);
+                Object value = field.get(bean);
+                if (value.getClass().isEnum()) {
+                    return value.toString();
                 }
-                return (String) field.get(bean);
+                return (String) value;
             }
         }
         return null;

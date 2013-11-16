@@ -23,7 +23,6 @@ import static org.eventstudio.util.RequireUtils.requireNotNull;
 
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -78,7 +77,7 @@ class Station {
     }
 
     private void doBroadcast(Object event) {
-        TreeSet<ListenerReferenceHolder> eventListeners = listeners.nullSafeGetListeners(event.getClass());
+        List<ListenerReferenceHolder> eventListeners = listeners.nullSafeGetListeners(event.getClass());
         Envelope enveloped = new Envelope(event);
         for (ListenerReferenceHolder holder : eventListeners) {
             ListenerWrapper listener = holder.getListenerWrapper();
