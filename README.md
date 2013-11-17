@@ -22,7 +22,7 @@ The solution I found was to mimic a network of radio stations. For those familia
 ![alt text](https://raw.github.com/torakiki/event-studio/master/src/graphics/event-studio.png "EventStudio diagram")
 
 #### In a nutshell
-`Listeners`s registers themselves on a `Station` for a specific event class and publishers can broadcast their events to a specific `Station` or to every `Station`.
+`Listeners`s registers themselves on a `Station` for a specific event class and publishers can broadcast their events to a `Station`.
 ##### Additionally
 * A `Supervisor` can be registered on a `Station` and it will be notified of every message going through the `Station` before handing it to the `Listeners`s.
 * Publishers can broadcast to all the `Station`s
