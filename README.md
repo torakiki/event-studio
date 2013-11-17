@@ -118,13 +118,15 @@ And register it:
     }
 ``` 
 ### Remove listeners
-``` 
+```
+	ParentListener parentListener = new ParentListener();
+	GenParentListener<ChildEvent> genericListener = new GenParentListener<ChildEvent>();
+	....
     public void removeListeners() {
-        eventStudio().remove(new ParentListener());
-        eventStudio().remove(new ParentListener(), "MyStation");
-        eventStudio().remove(ChildEvent.class, new GenParentListener<ChildEvent>(), 
-        "MyStation");
-        eventStudio().remove(ChildEvent.class, new GenParentListener<ChildEvent>());
+        eventStudio().remove(parentListener);
+        eventStudio().remove(parentListener, "MyStation");
+        eventStudio().remove(ChildEvent.class, genericListener, "MyStation");
+        eventStudio().remove(ChildEvent.class, genericListener);
     }
 ``` 
 ###Broadcast
