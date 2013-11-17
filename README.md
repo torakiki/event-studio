@@ -208,7 +208,7 @@ and add the pojo to EventStudio:
 ```
 and broadcast event to the module:
 ``` 
- public void disableA() {
+ public void disableModuleA() {
     eventStudio().broadcast(new DisableEvent(), "ModuleA");
  }
 ```
