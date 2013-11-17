@@ -1,9 +1,9 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'signing'
 
 group = 'org.eventstudio'
 version = '1.0.0.BETA-SNAPSHOT'
-
 description = "A simple even bus implementation providing pub/sub event exchange between components"
 
 sourceCompatibility = 1.5
@@ -16,4 +16,64 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version:'4.11'
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.0.13'
     testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+              authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+               name 'EventStudio'
+               packaging 'jar'
+               description 'A simple even bus implementation providing pub/sub event exchange between components'
+               url 'https://github.com/torakiki/event-studio'
+               
+               scm {
+                   url 'scm:git@github.com:torakiki/event-studio.git'
+                   connection 'scm:git@github.com:torakiki/event-studio.git'
+                   developerConnection 'scm:git@github.com:torakiki/event-studio.git'
+               }
+
+               licenses {
+                   license {
+                       name 'The Apache Software License, Version 2.0'
+                       url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                       distribution 'repo'
+                   }
+               }
+
+               developers {
+                   developer {
+                       id 'torakiki'
+                       name 'Andrea Vacondio'
+                   }
+               }
+           }
+        }
+    }
 }
