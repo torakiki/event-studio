@@ -19,10 +19,15 @@ Working on a rich client software that can have multiple modules/plugins and:
 #### Enter the Station
 The solution I found was to mimic a network of radio stations. For those familiar with [RabbitMQ](http://www.rabbitmq.com/), the architecture is loosely resembling a [DirectExchange](http://www.rabbitmq.com/tutorials/tutorial-four-java.html) where the event class is the binding key.
 
-TODO Image
+![alt text](https://raw.github.com/torakiki/event-studio/master/src/graphics/event-studio.png "EventStudio diagram")
 
 #### In a nutshell
-Listeners registers themselves on a station for a specific event class and publishers can broadcast their events to a specific station or to every station.
+`Listeners`s registers themselves on a `Station` for a specific event class and publishers can broadcast their events to a specific `Station` or to every `Station`.
+##### Additionally
+* A `Supervisor` can be registered on a `Station` and it will be notified of every message going through the `Station` before handing it to the `Listeners`s.
+* Publishers can broadcast to all the `Station`s
+* Undelivered events are stored in a queue and delivered as soon as `Listener`s for those events register.
+
 
 Features/Characteristics
 ---------
