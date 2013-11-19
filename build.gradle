@@ -4,7 +4,7 @@ apply plugin: 'signing'
 apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/apply.groovy'
 
 group = 'org.sejda'
-version = '1.0.0-SNAPSHOT'
+version = '1.0.1-SNAPSHOT'
 description = "A simple even bus implementation providing pub/sub event exchange between components"
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 

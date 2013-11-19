@@ -47,11 +47,19 @@ Features/Characteristics
 + Helper methods to completely hide the `Station` abstraction and behave like a traditional pub/sub event bus
 + Strict event class matching (i.e. child events are not notified to listeners registered on parent events)
 + Singleton pattern provided but **not** enforced
-+ TODO Maven central
 
 #### What is not there
 + Async listeners execution
 
+Maven coordinates
+----------
+``` 
+<dependency>
+  <groupId>org.sejda</groupId>
+  <artifactId>eventstudio</artifactId>
+  <version>1.0.0</version>
+</dependency>
+``` 
 
 Examples
 --------
