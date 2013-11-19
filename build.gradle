@@ -2,13 +2,16 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 group = 'org.sejda'
-version = '1.0.0.BETA-SNAPSHOT'
+version = '1.0.0.SNAPSHOT'
 description = "A simple even bus implementation providing pub/sub event exchange between components"
 
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
 
-repositories { maven { url "http://repo.maven.apache.org/maven2" } }
+repositories { maven { url "http://repo.maven.apache.org/maven2"
+    } }
+
+apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/apply.groovy'
 
 dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
@@ -31,5 +34,11 @@ artifacts {
     archives jar
     archives javadocJar
     archives sourcesJar
+}
+
+release {
+    tagPrefix = 'v.'
+    failOnPublishNeeded = false
+    failOnCommitNeeded = false
 }
 
