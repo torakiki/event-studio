@@ -1,17 +1,20 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'signing'
+apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/apply.groovy'
 
 group = 'org.sejda'
-version = '1.0.0.SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 description = "A simple even bus implementation providing pub/sub event exchange between components"
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
 
-repositories { maven { url "http://repo.maven.apache.org/maven2"
-    } }
 
-apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/apply.groovy'
+repositories {
+    maven {  url "http://repo.maven.apache.org/maven2" }
+}
 
 dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.5'
@@ -20,25 +23,71 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-all', version:'1.9.5'
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
+task sourcesJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 artifacts {
-    archives jar
-    archives javadocJar
     archives sourcesJar
+    archives javadocJar
 }
 
 release {
-    tagPrefix = 'v.'
+    tagPrefix = 'v'
     failOnPublishNeeded = false
     failOnCommitNeeded = false
+}
+
+signing {
+    required { isReleaseVersion }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'EventStudio'
+                packaging 'jar'
+                description 'A simple even bus implementation providing pub/sub event exchange between components'
+                url 'https://github.com/torakiki/event-studio/'
+
+                scm {
+                    url 'scm:git@github.com:torakiki/event-studio.git'
+                    connection 'scm:git@github.com:torakiki/event-studio.git'
+                    developerConnection 'scm:git@github.com:torakiki/event-studio.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                        comments 'ASLv2'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'torakiki'
+                        name 'Andrea Vacondio'
+                        email 'andrea.vacondio@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }
 
