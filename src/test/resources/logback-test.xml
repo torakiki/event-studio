@@ -7,9 +7,9 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.eventstudio" level="TRACE" />
+	<logger name="org.sejda.eventstudio" level="DEBUG" />
 
-	<root level="WARN">
+	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

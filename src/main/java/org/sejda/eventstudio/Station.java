@@ -69,6 +69,7 @@ class Station {
     }
 
     public void broadcast(Object event) {
+        LOG.debug("{}: Broadcasting {}", this, event);
         requireNotNull(event);
         LOG.trace("{}: Supervisor {} about to inspect", this, supervisor);
         supervisor.inspect(event);
@@ -76,7 +77,7 @@ class Station {
         doBroadcast(event);
     }
 
-    private void doBroadcast(Object event) {
+    private boolean doBroadcast(Object event) {
         List<ListenerReferenceHolder> eventListeners = listeners.nullSafeGetListeners(event.getClass());
         Envelope enveloped = new Envelope(event);
         for (ListenerReferenceHolder holder : eventListeners) {
@@ -85,7 +86,7 @@ class Station {
                 LOG.trace("{}: Notifing event {} to {}", this, event, listener);
                 listener.onEvent(enveloped);
             } else {
-                LOG.trace("{}: Removing garbage collected listener from the station", this);
+                LOG.debug("{}: Removing garbage collected listener from the station", this);
                 listeners.remove(event.getClass(), holder);
             }
         }
@@ -96,6 +97,7 @@ class Station {
                 LOG.warn("{}: Unable to store unlistened event, it's going to be lost {}", this, event);
             }
         }
+        return enveloped.isNotified();
     }
 
     <T> void add(Listener<T> listener, int priority, ReferenceStrength strength) {
@@ -111,14 +113,14 @@ class Station {
     <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
         requireNotNull(eventClass);
         requireNotNull(listener);
-        LOG.trace("{}: Adding listener {} [priority={} strength={}]", this, listener, priority, strength);
+        LOG.debug("{}: Adding listener {} [priority={} strength={}]", this, listener, priority, strength);
         listeners.add(eventClass, listener, priority, strength);
         broadcastEnqueuedEventsFor(eventClass);
     }
 
     void addAll(Object bean, List<ReflectiveListenerDescriptor> descriptors) {
         requireNotNull(descriptors);
-        LOG.trace("{}: Adding {} reflective listeners for {}", this, descriptors.size(), bean);
+        LOG.debug("{}: Adding {} reflective listeners for {}", this, descriptors.size(), bean);
         Set<Class<?>> updatedEventClasses = listeners.addAll(bean, descriptors);
         for (Class<?> updatedClass : updatedEventClasses) {
             broadcastEnqueuedEventsFor(updatedClass);
@@ -128,9 +130,10 @@ class Station {
     private void broadcastEnqueuedEventsFor(Class<?> updatedClass) {
         BlockingQueue<Object> queue = getQueue(updatedClass);
         Object event = null;
-        while ((event = queue.poll()) != null) {
+        boolean keepBroadcasting = true;
+        while (keepBroadcasting && (event = queue.poll()) != null) {
             LOG.debug("{}: Found enqueued event {}, now broadcasting it.", this, event);
-            doBroadcast(event);
+            keepBroadcasting = doBroadcast(event);
         }
     }
 
@@ -147,6 +150,7 @@ class Station {
     <T> boolean remove(Class<T> eventClass, Listener<T> listener) {
         requireNotNull(eventClass);
         requireNotNull(listener);
+        LOG.debug("{}: Removing listener {} [eventClass={}]", this, listener, eventClass);
         return listeners.remove(eventClass, listener);
     }
 
