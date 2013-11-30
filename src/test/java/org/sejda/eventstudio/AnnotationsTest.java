@@ -20,9 +20,10 @@ package org.sejda.eventstudio;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import org.junit.Test;
-import org.sejda.eventstudio.Annotations;
+import org.sejda.eventstudio.Annotations.ReflectiveListenerDescriptor;
 import org.sejda.eventstudio.Annotations.ReflectiveMetadata;
 import org.sejda.eventstudio.annotation.EventListener;
 import org.sejda.eventstudio.annotation.EventStation;
@@ -78,6 +79,73 @@ public class AnnotationsTest {
         assertEquals(1, metadata.getDescriptors().get("MyPersonalStation").size());
     }
 
+    @Test
+    public void inheritedListeners() throws IllegalAccessException, InvocationTargetException {
+        ReflectiveMetadata metadata = Annotations.process(new ChildListener());
+        List<ReflectiveListenerDescriptor> parentStation = metadata.getDescriptors().get("parentStation");
+        assertEquals(1, parentStation.size());
+        assertEquals("inheritedListen", parentStation.get(0).getMethod().getName());
+    }
+
+    @Test
+    public void privateListeners() throws IllegalAccessException, InvocationTargetException {
+        ReflectiveMetadata metadata = Annotations.process(new ChildListener());
+        List<ReflectiveListenerDescriptor> childStation = metadata.getDescriptors().get("childStation");
+        assertEquals(1, childStation.size());
+        assertEquals("privateListen", childStation.get(0).getMethod().getName());
+    }
+
+    @Test
+    public void overriddenNotAnnotatedListeners() throws IllegalAccessException, InvocationTargetException {
+        ReflectiveMetadata metadata = Annotations.process(new ChildListener());
+        List<ReflectiveListenerDescriptor> hiddenStation = metadata.getDescriptors().get("");
+        assertEquals(null, hiddenStation);
+    }
+
+    @Test
+    public void overriddenAnnotateListeners() throws IllegalAccessException, InvocationTargetException {
+        ReflectiveMetadata metadata = Annotations.process(new AnnotatedChildListener());
+        List<ReflectiveListenerDescriptor> hiddenStation = metadata.getDescriptors().get("");
+        assertEquals(1, hiddenStation.size());
+        assertEquals("listen", hiddenStation.get(0).getMethod().getName());
+        assertEquals(AnnotatedChildListener.class, hiddenStation.get(0).getMethod().getDeclaringClass());
+    }
+
+    public static class ParentListener {
+        @EventListener
+        public void listen(String event) {
+            // nothing
+        }
+
+        @EventListener(station = "parentStation")
+        public void inheritedListen(String event) {
+            // nothing
+        }
+    }
+
+    public static class ChildListener extends ParentListener {
+        @Override
+        public void listen(String event) {
+            // nothing
+        }
+
+        @EventListener(station = "childStation")
+        private void privateListen(String another) {
+            // nothing
+        }
+    }
+
+    public static class AnnotatedChildListener extends ParentListener {
+        @EventListener
+        public void listen(String event) {
+            // nothing
+        }
+
+        @EventListener(station = "childStation")
+        private void privateListen(String another) {
+            // nothing
+        }
+    }
     public static class WrongStation {
         @EventStation
         public String withParams(Object first) {

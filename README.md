@@ -227,3 +227,32 @@ and broadcast event to the module:
     eventStudio().broadcast(new DisableEvent(), "ModuleA");
  }
 ```
+###Annotation and inheritance
+####Station: annotated field
+Any annotated field (public, protected, default (package) access, and private fields, but excludes inherited fields) with the `@EventStation` is discovered and used as `Station`.
+####Station: annotated method
+Any annotated method (including protected, default (package) access, private, public declared by the class or interface and those inherited from superclasses and superinterfaces) with the `@EventStation` is discovered and used as `Station`.
+####Listeners: annotated methods
+Any annotated method (including protected, default (package) access, private, public declared by the class or interface and those inherited from superclasses and superinterfaces) with the `@EventListener` is discovered and used as `Listener`.
+####Inheritance
+In case of overridden methods no funky logic is applied trying to guess what the user intentions are, if you override an annotated method (either with `@EventStation` or `@EventListener`) and you want it to be discovered, it has to be annotated as well. In short if a method is overridden, annotations are not inherited. Consider making your annotated methods as final to avoid subclasses to override them causing unexpected behaviors.
+```
+ public class ParentListener {
+    @EventListener
+    public void listen(String event) {
+        // do something
+    }
+ }
+
+ public class ChildListener extends ParentListener {
+    @Override
+    public void listen(String event) {
+        // do something else
+    }
+ }
+ ....
+ eventStudio().addAnnotatedListeners(new ChildListener());
+```   
+In the previous case no listener is discovered because the annotated method is overridden. 
+####Method invocation
+Annotated methods are reflectively invoked using dynamic method lookup as documented in The Java Language Specification, Second Edition, section 15.12.4.4. See the [javadoc] (http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/reflect/Method.html#invoke%28java.lang.Object,%20java.lang.Object...%29).

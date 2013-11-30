@@ -23,8 +23,11 @@ import static org.sejda.eventstudio.util.StringUtils.isBlank;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,26 +54,44 @@ final class Annotations {
     public static ReflectiveMetadata process(Object bean) throws IllegalAccessException, InvocationTargetException {
         requireNotNull(bean);
         LOG.trace("Processing {} for annotated listeners", bean);
+        // TODO process public and private
         String station = getStationNameFromFieldIfAny(bean);
         ReflectiveMetadata metadata = new ReflectiveMetadata();
-        for (Method method : bean.getClass().getDeclaredMethods()) {
+        for (Method method : getMethods(bean)) {
             if (isBlank(station)) {
                 station = getStationNameIfAnnotated(method, bean);
             }
-            EventListener listenerAnnotation = method.getAnnotation(EventListener.class);
-            if (listenerAnnotation != null) {
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                if (parameterTypes.length != 1) {
-                    throw new EventStudioException(
-                            "@EventListener annotated method expected to be a single parameter method");
-                }
-                LOG.trace("Found @EventListener annotated method {}", method);
-                metadata.put(listenerAnnotation.station(), new ReflectiveListenerDescriptor(
-                        listenerAnnotation, method));
-            }
+            addIfAnnotated(metadata, method);
         }
         metadata.station = station;
         return metadata;
+    }
+
+    /**
+     * @param bean
+     * @return a list containing all the public methods (inherited and not) and all the private, package and protected (not inherited)
+     */
+    private static List<Method> getMethods(Object bean) {
+        List<Method> methods = new LinkedList<Method>(Arrays.asList(bean.getClass().getMethods()));
+        for (Method method : bean.getClass().getDeclaredMethods()) {
+            if (!Modifier.isPublic(method.getModifiers())) {
+                methods.add(method);
+            }
+        }
+        return methods;
+    }
+
+    private static void addIfAnnotated(ReflectiveMetadata metadata, Method method) {
+        EventListener listenerAnnotation = method.getAnnotation(EventListener.class);
+        if (listenerAnnotation != null) {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes.length != 1) {
+                throw new EventStudioException(
+                        "@EventListener annotated method expected to be a single parameter method");
+            }
+            LOG.trace("Found @EventListener annotated method {}", method);
+            metadata.put(listenerAnnotation.station(), new ReflectiveListenerDescriptor(listenerAnnotation, method));
+        }
     }
 
     private static String getStationNameIfAnnotated(Method method, Object bean) throws InvocationTargetException,
