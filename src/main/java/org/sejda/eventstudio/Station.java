@@ -79,6 +79,7 @@ class Station {
 
     private boolean doBroadcast(Object event) {
         List<ListenerReferenceHolder> eventListeners = listeners.nullSafeGetListeners(event.getClass());
+        LOG.debug("{}: Found {} listeners", this, eventListeners.size());
         Envelope enveloped = new Envelope(event);
         for (ListenerReferenceHolder holder : eventListeners) {
             ListenerWrapper listener = holder.getListenerWrapper();
