@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.sejda.eventstudio.Annotations.ReflectiveListenerDescriptor;
+import org.sejda.eventstudio.exception.BroadcastInterruptionException;
 import org.sejda.eventstudio.exception.EventStudioException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,6 +242,9 @@ class Listeners {
             } catch (IllegalAccessException e) {
                 throw new EventStudioException("Exception invoking reflective method", e);
             } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof BroadcastInterruptionException) {
+                    throw (BroadcastInterruptionException) e.getCause();
+                }
                 throw new EventStudioException("Reflective method invocation exception", e);
             }
             event.notified();

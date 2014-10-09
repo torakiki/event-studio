@@ -37,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.sejda.eventstudio.Annotations.ReflectiveMetadata;
+import org.sejda.eventstudio.annotation.EventListener;
 import org.sejda.eventstudio.exception.BroadcastInterruptionException;
 import org.sejda.eventstudio.exception.EventStudioException;
 
@@ -172,6 +173,18 @@ public class StationTest {
     }
 
     @Test
+    public void broadcastInterruptedAnnotated() throws IllegalAccessException, InvocationTargetException {
+        Object event = new Object();
+        TestInterruptingPrioritizedAnnotatedBean bean = new TestInterruptingPrioritizedAnnotatedBean();
+        ReflectiveMetadata metadata = Annotations.process(bean);
+        TestInterruptingPrioritizedAnnotatedBean spy = spy(bean);
+        victim.addAll(spy, metadata.getDescriptors().get(""));
+        victim.broadcast(event);
+        verify(spy).first(event);
+        verify(spy, never()).second(event);
+    }
+
+    @Test
     public void removeAndBroadcast() {
         Object event = new Object();
         victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
@@ -205,5 +218,19 @@ public class StationTest {
         public void onEvent(T event) {
             // nothing
         }
+    }
+
+    private class TestInterruptingPrioritizedAnnotatedBean {
+
+        @EventListener(priority = 1)
+        public void first(Object event) {
+            throw new BroadcastInterruptionException("");
+        }
+
+        @EventListener(priority = 2)
+        public void second(Object event) {
+
+        }
+
     }
 }
