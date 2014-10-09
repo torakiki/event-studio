@@ -68,7 +68,7 @@ public class ShakedownTest {
     @After
     public void tearDown() throws InterruptedException {
         executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.MINUTES);
+        executor.awaitTermination(5 * 60, TimeUnit.SECONDS);
     }
 
     @Test

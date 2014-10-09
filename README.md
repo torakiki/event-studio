@@ -44,6 +44,7 @@ Features/Characteristics
 + Enqueue undelivered events and deliver them as soon as a listener registers
 + Strong/Soft/Weak listeners reference support
 + Prioritize listeners to enforce an execution order
++ Quick and dirty, super simple veto system
 + Helper methods to completely hide the `Station` abstraction and behave like a traditional pub/sub event bus
 + Strict event class matching (i.e. child events are not notified to listeners registered on parent events)
 + Singleton pattern provided but **not** enforced
@@ -152,6 +153,18 @@ Clear a `Station`, events won't be notified anymore.
     public void clear() {
         eventStudio().clear();
         eventStudio().clear( "MyStation");
+    }
+``` 
+###Veto
+Every `Listener` is allowed to veto the event it is listening for by throwing a `BroadcastInterruptionException`, broadcast of the event will be interrupted and lower priority `Listener`s won't receive it.
+``` 
+    public class VetoListener implements Listener<ParentEvent> {
+        public void onEvent(ParentEvent event) {
+        	if(some condition){
+        		throw new BroadcastInterruptionException("You won't get any!");
+        	}
+            System.out.println("Got it!");
+        }
     }
 ``` 
 Annotation

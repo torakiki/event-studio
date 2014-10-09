@@ -18,6 +18,8 @@
 package org.sejda.eventstudio;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -26,25 +28,25 @@ import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.sejda.eventstudio.Annotations;
-import org.sejda.eventstudio.Listener;
-import org.sejda.eventstudio.ReferenceStrength;
-import org.sejda.eventstudio.Station;
-import org.sejda.eventstudio.Supervisor;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.sejda.eventstudio.Annotations.ReflectiveMetadata;
+import org.sejda.eventstudio.exception.BroadcastInterruptionException;
 import org.sejda.eventstudio.exception.EventStudioException;
 
 /**
  * @author Andrea Vacondio
  * 
  */
+@RunWith(MockitoJUnitRunner.class)
 public class StationTest {
+
     private Station victim;
 
     @Mock
@@ -56,8 +58,13 @@ public class StationTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         victim = new Station("victim");
+    }
+
+    @After
+    public void tearDown() {
+        victim.remove(mockListener);
+        victim.remove(anotherMockListener);
     }
 
     @Test
@@ -130,6 +137,17 @@ public class StationTest {
         victim.broadcast(event);
         inOrder.verify(anotherMockListener).onEvent(event);
         inOrder.verify(mockListener).onEvent(event);
+    }
+
+    @Test
+    public void broadcastInterrupted() {
+        Object event = new Object();
+        doThrow(BroadcastInterruptionException.class).when(anotherMockListener).onEvent(any());
+        victim.add(mockListener, 0, ReferenceStrength.STRONG);
+        victim.add(anotherMockListener, -1, ReferenceStrength.STRONG);
+        victim.broadcast(event);
+        verify(anotherMockListener).onEvent(event);
+        verify(mockListener, never()).onEvent(event);
     }
 
     @Test

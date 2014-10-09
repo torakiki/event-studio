@@ -31,6 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.sejda.eventstudio.Annotations.ReflectiveListenerDescriptor;
 import org.sejda.eventstudio.Listeners.ListenerReferenceHolder;
 import org.sejda.eventstudio.Listeners.ListenerWrapper;
+import org.sejda.eventstudio.exception.BroadcastInterruptionException;
 import org.sejda.eventstudio.exception.EventStudioException;
 import org.sejda.eventstudio.util.ReflectionUtils;
 import org.slf4j.Logger;
@@ -74,7 +75,11 @@ class Station {
         LOG.trace("{}: Supervisor {} about to inspect", this, supervisor);
         supervisor.inspect(event);
         LOG.trace("{}: Listeners about to listen", this);
-        doBroadcast(event);
+        try {
+            doBroadcast(event);
+        } catch (BroadcastInterruptionException e) {
+            LOG.info("Broadcasting was interrupted.", e);
+        }
     }
 
     private boolean doBroadcast(Object event) {
