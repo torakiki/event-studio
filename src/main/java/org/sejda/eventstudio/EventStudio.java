@@ -31,6 +31,8 @@ package org.sejda.eventstudio;
  */
 public interface EventStudio {
 
+    String MAX_QUEUE_SIZE_PROP = "eventstudio.max.queue.size";
+
     /**
      * Adds the given {@link Listener} to the given station using default priority(0) ad default strength {@link ReferenceStrength#STRONG}.
      */

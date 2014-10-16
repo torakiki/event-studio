@@ -66,6 +66,7 @@ public class StationTest {
     public void tearDown() {
         victim.remove(mockListener);
         victim.remove(anotherMockListener);
+        System.clearProperty(EventStudio.MAX_QUEUE_SIZE_PROP);
     }
 
     @Test
@@ -212,6 +213,19 @@ public class StationTest {
     public void failingRemove() {
         SecondTestListener<String> listener = new SecondTestListener<String>();
         victim.remove(listener);
+    }
+
+    @Test
+    public void capacity() {
+        System.setProperty(EventStudio.MAX_QUEUE_SIZE_PROP, "3");
+        victim.broadcast(new Object());
+        victim.broadcast(new Object());
+        victim.broadcast(new Object());
+        victim.broadcast(new Object());
+        victim.broadcast(new Object());
+        victim.broadcast(new Object());
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
+        verify(mockListener, times(3)).onEvent(any(Object.class));
     }
 
     private class SecondTestListener<T extends Object> implements Listener<T> {

@@ -17,6 +17,7 @@
  */
 package org.sejda.eventstudio;
 
+import static org.sejda.eventstudio.EventStudio.MAX_QUEUE_SIZE_PROP;
 import static org.sejda.eventstudio.util.ReflectionUtils.inferParameterClass;
 import static org.sejda.eventstudio.util.RequireUtils.requireNotBlank;
 import static org.sejda.eventstudio.util.RequireUtils.requireNotNull;
@@ -36,7 +37,6 @@ import org.sejda.eventstudio.exception.EventStudioException;
 import org.sejda.eventstudio.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 /**
  * A {@link Station} is a place where broadcaster events are actually transmitted to the registered {@link Listener}s
  * 
@@ -60,7 +60,8 @@ class Station {
     private BlockingQueue<Object> getQueue(Class<?> clazz) {
         BlockingQueue<Object> queue = queues.get(clazz);
         if (queue == null) {
-            final BlockingQueue<Object> value = new LinkedBlockingQueue<Object>();
+            final BlockingQueue<Object> value = new LinkedBlockingQueue<Object>(Integer.getInteger(MAX_QUEUE_SIZE_PROP,
+                    Integer.MAX_VALUE));
             queue = queues.putIfAbsent(clazz, value);
             if (queue == null) {
                 queue = value;
@@ -99,8 +100,7 @@ class Station {
         if (!enveloped.isNotified()) {
             LOG.debug("{}: No one is listening for {}, enqueuing for future listeners", this, event);
             if (!getQueue(event.getClass()).offer(event)) {
-                // this shouldn't happen since we don't have constraints on stored event queue capacity
-                LOG.warn("{}: Unable to store unlistened event, it's going to be lost {}", this, event);
+                LOG.warn("{}: Max capacity might be reached, unable to store unlistened event, it's going to be lost {}", this, event);
             }
         }
         return enveloped.isNotified();
