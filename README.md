@@ -139,7 +139,7 @@ And register it:
         eventStudio().remove(ChildEvent.class, genericListener);
     }
 ``` 
-###Broadcast
+### Broadcast
 Broadcast events without specifying a `Station` name for a traditional Pub/Sub pattern, hiding the `Station` abstraction or broadcast them to a specific station or to all the `Station`s. 
 ``` 
      public void broadcast() {
@@ -148,7 +148,7 @@ Broadcast events without specifying a `Station` name for a traditional Pub/Sub p
         eventStudio().broadcastToEveryStation(new ChildEvent());
     }
 ``` 
-###Clear
+### Clear
 Clear a `Station`, events won't be notified anymore.
 ``` 
     public void clear() {
@@ -156,7 +156,7 @@ Clear a `Station`, events won't be notified anymore.
         eventStudio().clear( "MyStation");
     }
 ``` 
-###Veto
+### Veto
 Every `Listener` is allowed to veto the event it is listening for by throwing a `BroadcastInterruptionException`, broadcast of the event will be interrupted and lower priority `Listener`s won't receive it.
 ``` 
     public class VetoListener implements Listener<ParentEvent> {
@@ -190,7 +190,7 @@ and add the pojo to EventStudio. No `Station` is specified, traditional Pub/Sub.
     eventStudio().addAnnotatedListeners(new Foo());
  }
 ```
-###Annotation+Station with runtime name
+### Annotation+Station with runtime name
 You can specify the `Station` name of an annotated method or the `Station` name for all the annotated methods of a pojo. `Station` names defined on annotated methods have precedence over the pojo `Station` definition. `Enum` and `String` values can be used as station name.
 ```
 public class Foo {
@@ -241,14 +241,14 @@ and broadcast event to the module:
     eventStudio().broadcast(new DisableEvent(), "ModuleA");
  }
 ```
-###Annotation and inheritance
-####Station: annotated field
+### Annotation and inheritance
+#### Station: annotated field
 Any annotated field (public, protected, default (package) access, and private fields, but excludes inherited fields) with the `@EventStation` is discovered and used as `Station`.
-####Station: annotated method
+#### Station: annotated method
 Any annotated method (including protected, default (package) access, private, public declared by the class or interface and those inherited from superclasses and superinterfaces) with the `@EventStation` is discovered and used as `Station`.
-####Listeners: annotated methods
+#### Listeners: annotated methods
 Any annotated method (including protected, default (package) access, private, public declared by the class or interface and those inherited from superclasses and superinterfaces) with the `@EventListener` is discovered and used as `Listener`.
-####Inheritance
+#### Inheritance
 In case of overridden methods no funky logic is applied trying to guess what the user intentions are, if you override an annotated method (either with `@EventStation` or `@EventListener`) and you want it to be discovered, it has to be annotated as well. In short if a method is overridden, annotations are not inherited. Consider making your annotated methods as final to avoid subclasses to override them causing unexpected behaviors.
 ```
  public class ParentListener {
@@ -268,5 +268,5 @@ In case of overridden methods no funky logic is applied trying to guess what the
  eventStudio().addAnnotatedListeners(new ChildListener());
 ```   
 In the previous case no listener is discovered because the annotated method is overridden. 
-####Method invocation
+#### Method invocation
 Annotated methods are reflectively invoked using dynamic method lookup as documented in The Java Language Specification, Second Edition, section 15.12.4.4. See the [javadoc] (http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/reflect/Method.html#invoke%28java.lang.Object,%20java.lang.Object...%29).
