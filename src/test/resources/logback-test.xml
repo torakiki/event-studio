@@ -7,7 +7,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.sejda.eventstudio" level="DEBUG" />
+	<logger name="org.pdfsam.eventstudio" level="DEBUG" />
 
 	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />
