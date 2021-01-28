@@ -18,7 +18,7 @@
 package org.pdfsam.eventstudio;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -35,13 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.pdfsam.eventstudio.Annotations;
-import org.pdfsam.eventstudio.EventStudio;
-import org.pdfsam.eventstudio.Listener;
-import org.pdfsam.eventstudio.ReferenceStrength;
-import org.pdfsam.eventstudio.Station;
-import org.pdfsam.eventstudio.Supervisor;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.pdfsam.eventstudio.Annotations.ReflectiveMetadata;
 import org.pdfsam.eventstudio.annotation.EventListener;
 import org.pdfsam.eventstudio.exception.BroadcastInterruptionException;
@@ -235,6 +229,7 @@ public class StationTest {
     }
 
     private class SecondTestListener<T extends Object> implements Listener<T> {
+        @Override
         public void onEvent(T event) {
             // nothing
         }

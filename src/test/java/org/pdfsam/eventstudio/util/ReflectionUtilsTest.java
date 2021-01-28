@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.pdfsam.eventstudio.Listener;
-import org.pdfsam.eventstudio.util.ReflectionUtils;
 
 /**
  * @author Andrea Vacondio

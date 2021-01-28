@@ -20,7 +20,6 @@ package org.pdfsam.eventstudio;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.pdfsam.eventstudio.StaticStudio;
 
 /**
  * @author Andrea Vacondio

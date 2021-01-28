@@ -17,7 +17,6 @@
  */
 package org.pdfsam.eventstudio;
 
-import org.pdfsam.eventstudio.ReferenceStrength;
 import org.pdfsam.eventstudio.annotation.EventListener;
 import org.pdfsam.eventstudio.annotation.EventStation;
 

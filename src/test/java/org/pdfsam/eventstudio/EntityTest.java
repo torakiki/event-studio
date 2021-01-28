@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNull;
 import java.lang.ref.SoftReference;
 
 import org.junit.Test;
-import org.pdfsam.eventstudio.Entity;
 import org.pdfsam.eventstudio.Entity.ReferencedEntity;
 import org.pdfsam.eventstudio.Entity.StrongEntity;
 
