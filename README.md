@@ -1,7 +1,7 @@
 
 EventStudio
 =====================
-[![Build Status](https://travis-ci.org/torakiki/event-studio.png?branch=master)](https://travis-ci.org/torakiki/event-studio)
+![Build Status](https://github.com/torakiki/event-studio/actions/workflows/build.yml/badge.svg)
 [![License](http://img.shields.io/badge/license-APLv2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 EventStudio is yet another pure Java event bus implementation providing pub/sub pattern with events queue capabilities for intra-jvm event communication.
