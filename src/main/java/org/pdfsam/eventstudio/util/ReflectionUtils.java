@@ -35,8 +35,6 @@ public final class ReflectionUtils {
     /**
      * Given a concrete class and a method name, it tries to infer the Class of the first parameter of the method
      * 
-     * @param clazz
-     * @param methodName
      * @return the class or null if nothing found
      */
     @SuppressWarnings("rawtypes")

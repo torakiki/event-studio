@@ -32,6 +32,7 @@ The solution I found was to mimic a network of radio stations. For those familia
 
 Features/Characteristics
 ---------
++ Branch 2 requires JDK 8 or higher, Branch 3 requires JDK 11 or higher
 + Minimal dependencies ([slf4j](http://www.slf4j.org/))
 + Thread safe
 + Fully unit tested

@@ -80,7 +80,6 @@ public interface EventStudio {
     /**
      * Discovers annotated method on the the given bean and adds them as {@link Listener}s
      * 
-     * @param bean
      * @see org.pdfsam.eventstudio.annotation.EventListener
      * @see org.pdfsam.eventstudio.annotation.EventStation
      */

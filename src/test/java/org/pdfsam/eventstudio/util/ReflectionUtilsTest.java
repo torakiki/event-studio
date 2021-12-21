@@ -18,6 +18,7 @@
 package org.pdfsam.eventstudio.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 import org.pdfsam.eventstudio.Listener;
@@ -36,7 +37,7 @@ public class ReflectionUtilsTest {
     @Test
     public void testFailingInfer() {
         SecondTestListener<TestEvent> victim = new SecondTestListener<>();
-        assertEquals(null, ReflectionUtils.inferParameterClass(victim.getClass(), "onEvent"));
+        assertNull(ReflectionUtils.inferParameterClass(victim.getClass(), "onEvent"));
     }
 
     private class TestListener implements Listener<TestEvent> {

@@ -86,9 +86,7 @@ public class DefaultEventStudio implements EventStudio {
                 String station = defaultString(metadata.getStation(), HIDDEN_STATION);
                 stations.getStation(defaultString(current.getKey(), station)).addAll(bean, current.getValue());
             }
-        } catch (IllegalAccessException e) {
-            throw new EventStudioException("An error occurred processing the input bean", e);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new EventStudioException("An error occurred processing the input bean", e);
         }
 
@@ -137,7 +135,6 @@ public class DefaultEventStudio implements EventStudio {
     /**
      * Adds a {@link Supervisor} to the hidden station, hiding the station abstraction.
      * 
-     * @param supervisor
      * @see EventStudio#supervisor(Supervisor, String)
      * @see DefaultEventStudio#HIDDEN_STATION
      */

@@ -27,7 +27,7 @@ import static org.pdfsam.eventstudio.util.RequireUtils.requireNotNull;
  */
 class Envelope {
     private boolean notified = false;
-    private Object event;
+    private final Object event;
 
     Envelope(Object event) {
         requireNotNull(event);

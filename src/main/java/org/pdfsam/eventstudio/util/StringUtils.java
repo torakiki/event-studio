@@ -38,8 +38,6 @@ public final class StringUtils {
     }
 
     /**
-     * @param input
-     * @param defaultValue
      * @return the unchanged input if it's not blank, the default value otherwise
      */
     public static String defaultString(String input, String defaultValue) {

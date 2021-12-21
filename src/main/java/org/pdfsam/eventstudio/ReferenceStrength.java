@@ -47,8 +47,6 @@ public enum ReferenceStrength {
     };
 
     /**
-     * 
-     * @param referent
      * @return the referent wrapped with the appropriate {@link Entity} instance.
      */
     abstract <T> Entity<T> getReference(T referent);

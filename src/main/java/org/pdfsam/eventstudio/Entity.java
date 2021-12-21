@@ -41,8 +41,8 @@ interface Entity<T> {
      * 
      * @param <T>
      */
-    static class ReferencedEntity<T> implements Entity<T> {
-        private Reference<T> reference;
+    class ReferencedEntity<T> implements Entity<T> {
+        private final Reference<T> reference;
 
         ReferencedEntity(Reference<T> reference) {
             requireNotNull(reference);
@@ -61,8 +61,8 @@ interface Entity<T> {
      * 
      * @param <T>
      */
-    static class StrongEntity<T> implements Entity<T> {
-        private T referent;
+    class StrongEntity<T> implements Entity<T> {
+        private final T referent;
 
         StrongEntity(T referent) {
             this.referent = referent;

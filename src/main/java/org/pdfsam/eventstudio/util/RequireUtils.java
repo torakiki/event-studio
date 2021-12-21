@@ -32,7 +32,7 @@ public final class RequireUtils {
     /**
      * Requires that the input string is not blank
      * 
-     * @param victim
+     * @param victim the string to be tested
      * @throws IllegalArgumentException
      *             if the input is blank
      */
@@ -45,7 +45,7 @@ public final class RequireUtils {
     /**
      * Requires that the input argument is not null
      * 
-     * @param victim
+     * @param victim the string to be tested
      * @throws IllegalArgumentException
      *             if the input is null
      */

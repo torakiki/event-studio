@@ -47,8 +47,8 @@ class Station {
 
     private static final Logger LOG = LoggerFactory.getLogger(Station.class);
 
-    private ConcurrentMap<Class<?>, BlockingQueue<Object>> queues = new ConcurrentHashMap<>();
-    private Listeners listeners = new Listeners();
+    private final ConcurrentMap<Class<?>, BlockingQueue<Object>> queues = new ConcurrentHashMap<>();
+    private final Listeners listeners = new Listeners();
     private volatile Supervisor supervisor = Supervisor.SLACKER;
     private final String name;
 

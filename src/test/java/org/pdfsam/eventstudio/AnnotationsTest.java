@@ -18,6 +18,7 @@
 package org.pdfsam.eventstudio;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -99,7 +100,7 @@ public class AnnotationsTest {
     public void overriddenNotAnnotatedListeners() throws IllegalAccessException, InvocationTargetException {
         ReflectiveMetadata metadata = Annotations.process(new ChildListener());
         List<ReflectiveListenerDescriptor> hiddenStation = metadata.getDescriptors().get("");
-        assertEquals(null, hiddenStation);
+        assertNull(hiddenStation);
     }
 
     @Test
@@ -197,7 +198,7 @@ public class AnnotationsTest {
 
     public enum WhateverEnum {
         CHUCK,
-        NORRIS;
+        NORRIS
     }
 
     public static class StationFieldEnum {

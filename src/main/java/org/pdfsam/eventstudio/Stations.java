@@ -36,10 +36,9 @@ class Stations {
 
     private static final Logger LOG = LoggerFactory.getLogger(Stations.class);
 
-    private ConcurrentMap<String, Station> stations = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Station> stations = new ConcurrentHashMap<>();
 
     /**
-     * @param stationName
      * @return the station with the given name. It safely creates a new {@link Station} if a station with the given name does not exist.
      * @throws IllegalArgumentException
      *             if the station name is blank or null

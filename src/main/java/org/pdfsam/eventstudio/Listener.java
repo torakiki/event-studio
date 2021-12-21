@@ -28,8 +28,6 @@ public interface Listener<T> {
 
     /**
      * Notify the listener of the given event
-     * 
-     * @param event
      */
     void onEvent(T event);
 }
