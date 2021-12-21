@@ -24,6 +24,12 @@ jobs:
       with:
         java-version: 11
         distribution: 'temurin'
+        server-id: pdfsam-ossrh
+        server-username: OSSRH_USERNAME
+        server-password: OSSRH_TOKEN
         cache: 'maven'
     - name: Publish to Central
-      run: mvn -s .github/workflows/settings.xml --no-transfer-progress --batch-mode -Prelease deploy
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+      run: mvn --no-transfer-progress --batch-mode -Prelease deploy
