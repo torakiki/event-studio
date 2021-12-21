@@ -26,7 +26,4 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
     - name: Publish to Central
-      env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
       run: mvn -s .github/workflows/settings.xml --no-transfer-progress --batch-mode -Prelease deploy
