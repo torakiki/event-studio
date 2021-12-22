@@ -42,8 +42,6 @@ public interface Supervisor {
 
     /**
      * Inspect the event
-     * 
-     * @param event
      */
     void inspect(Object event);
 
