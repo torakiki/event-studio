@@ -1,7 +1,7 @@
 /*
  * This file is part of the EventStudio source code
  * Created on 22/dec/2021
- * Copyright 2021 by Sober Lemur S.a.s di Vacondio Andrea (info@soberlemur.com).
+ * Copyright 2021 by Sober Lemur S.r.l. (info@soberlemur.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

@@ -16,7 +16,7 @@
     </issueManagement>
 
     <organization>
-        <name>Sober Lemur S.a.s. di Vacondio Andrea</name>
+        <name>Sober Lemur S.r.l.</name>
         <url>https://pdfsam.org</url>
     </organization>
 
@@ -137,7 +137,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Built-By>Sober Lemur S.a.s.</Built-By>
+                            <Built-By>Sober Lemur S.r.l.</Built-By>
                         </manifestEntries>
                     </archive>
                 </configuration>
