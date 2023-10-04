@@ -32,14 +32,14 @@ The solution I found was to mimic a network of radio stations. For those familia
 
 Features/Characteristics
 ---------
-+ Branch 2 requires JDK 8 or higher, Branch 3 requires JDK 11 or higher
++ Branch 2 requires JDK 8 or higher, branch 3 requires JDK 11 or higher, branch 4 requires JDK 21 or higher
 + Minimal dependencies ([slf4j](http://www.slf4j.org/))
 + Thread safe
 + Fully unit tested
 + Fully documented
 + Super simple API
 + Any pojo can be an event
-+ Programatically add/remove support to add/remove listeners to/from a given station
++ Programmatically add/remove support to add/remove listeners to/from a given station
 + Annotation support to add listeners to a station with runtime name (any pojo can be a listener)
 + Broadcast to a given station or every station
 + `Supervisor` of a `Station` to be notified of every message going through the `Station`
