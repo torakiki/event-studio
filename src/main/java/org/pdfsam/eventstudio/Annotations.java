@@ -156,22 +156,7 @@ final class Annotations {
      *
      * @author Andrea Vacondio
      */
-    static class ReflectiveListenerDescriptor {
+    record ReflectiveListenerDescriptor(EventListener listenerAnnotation, Method method) {
 
-        private final EventListener listenerAnnotation;
-        private final Method method;
-
-        public ReflectiveListenerDescriptor(EventListener listenerAnnotation, Method method) {
-            this.listenerAnnotation = listenerAnnotation;
-            this.method = method;
-        }
-
-        public EventListener getListenerAnnotation() {
-            return listenerAnnotation;
-        }
-
-        public Method getMethod() {
-            return method;
-        }
     }
 }

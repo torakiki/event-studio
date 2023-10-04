@@ -29,7 +29,7 @@ import org.pdfsam.eventstudio.Annotations.ReflectiveMetadata;
 import org.pdfsam.eventstudio.exception.EventStudioException;
 
 /**
- * Default implementation of {@link EventStudio}. It doesn't enforce a Singleton pattern and it's up to the user to decide how to use it and how many EventStudio the application
+ * Default implementation of {@link EventStudio}. It doesn't enforce a Singleton pattern, and it's up to the user to decide how to use it and how many EventStudio the application
  * needs. A singleton implementation with lazy initialization is provided with {@link org.pdfsam.eventstudio.StaticStudio} where the typical usage is:
  * 
  * <pre>
@@ -144,7 +144,7 @@ public class DefaultEventStudio implements EventStudio {
 
     public void supervisor(Supervisor supervisor, String station) {
         requireNotNull(supervisor);
-        stations.getStation(station).supervior(supervisor);
+        stations.getStation(station).supervisor(supervisor);
     }
 
     public <T> boolean remove(Listener<T> listener, String station) {
@@ -196,7 +196,7 @@ public class DefaultEventStudio implements EventStudio {
     }
 
     /**
-     * Boradcast the event to the hidden station
+     * Broadcast the event to the hidden station
      * 
      * @see EventStudio#broadcast(Object, String)
      * @see DefaultEventStudio#HIDDEN_STATION

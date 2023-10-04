@@ -90,7 +90,7 @@ class Station {
         for (ListenerReferenceHolder holder : eventListeners) {
             ListenerWrapper listener = holder.getListenerWrapper();
             if (listener != null) {
-                LOG.trace("{}: Notifing event {} to {}", this, event, listener);
+                LOG.trace("{}: Notifying event {} to {}", this, event, listener);
                 listener.onEvent(enveloped);
             } else {
                 LOG.debug("{}: Removing garbage collected listener from the station", this);
@@ -168,7 +168,12 @@ class Station {
 
     }
 
+    @Deprecated
     public void supervior(Supervisor supervisor) {
+        supervisor(supervisor);
+    }
+
+    public void supervisor(Supervisor supervisor) {
         requireNotNull(supervisor);
         this.supervisor = supervisor;
     }

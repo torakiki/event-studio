@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to allow the definition of an event station with it's name defined at runtime when the annotation is processed. A {@link String} or {@link Enum} field or a method
+ * Annotation to allow the definition of an event station with its name defined at runtime when the annotation is processed. A {@link String} or {@link Enum} field or a method
  * returning a {@link String} or {@link Enum} can be annotated and all the {@link EventListener} found in the pojo will be registered as listener for the given station.
  * 
  * @author Andrea Vacondio

@@ -64,11 +64,11 @@ class Listeners {
         lock.writeLock().lock();
         try {
             for (ReflectiveListenerDescriptor current : descriptors) {
-                Class<?> eventClass = current.getMethod().getParameterTypes()[0];
+                Class<?> eventClass = current.method().getParameterTypes()[0];
                 TreeSet<ListenerReferenceHolder> set = nullSafeGetListenerHolders(eventClass);
-                set.add(new ListenerReferenceHolder(current.getListenerAnnotation().priority(),
-                                                    current.getListenerAnnotation().strength()
-                                                           .getReference(new ReflectiveListenerWrapper(bean, current.getMethod()))));
+                set.add(new ListenerReferenceHolder(current.listenerAnnotation().priority(),
+                                                    current.listenerAnnotation().strength()
+                                                           .getReference(new ReflectiveListenerWrapper(bean, current.method()))));
                 updatedEventClasses.add(eventClass);
             }
 
@@ -169,73 +169,56 @@ class Listeners {
     }
 
     /**
-     * Listener wrapper around an explicitly defined {@link Listener}
-     *
-     * @author Andrea Vacondio
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static final class DefaultListenerWrapper implements ListenerWrapper {
-        private final Listener wrapped;
+         * Listener wrapper around an explicitly defined {@link Listener}
+         *
+         * @author Andrea Vacondio
+         */
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        private record DefaultListenerWrapper(Listener wrapped) implements ListenerWrapper {
 
-        private DefaultListenerWrapper(Listener wrapped) {
-            this.wrapped = wrapped;
-        }
-
-        public void onEvent(Envelope event) {
-            wrapped.onEvent(event.getEvent());
-            event.notified();
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((wrapped == null) ? 0 : wrapped.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
+            public void onEvent(Envelope event) {
+                wrapped.onEvent(event.getEvent());
+                event.notified();
             }
-            if (!(o instanceof DefaultListenerWrapper)) {
-                return false;
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof DefaultListenerWrapper other)) {
+                    return false;
+                }
+                return wrapped.equals(other.wrapped);
             }
-            DefaultListenerWrapper other = (DefaultListenerWrapper) o;
-            return wrapped.equals(other.wrapped);
         }
-    }
 
     /**
-     * Reflective invocation of an annotated listener
-     *
-     * @author Andrea Vacondio
-     */
-    private static final class ReflectiveListenerWrapper implements ListenerWrapper {
-        private final Object bean;
-        private final Method method;
-
-        public ReflectiveListenerWrapper(Object bean, Method method) {
-            this.bean = bean;
-            this.method = method;
-            this.method.setAccessible(true);
-        }
-
-        public void onEvent(Envelope event) {
-            try {
-                method.invoke(bean, event.getEvent());
-            } catch (IllegalAccessException e) {
-                throw new EventStudioException("Exception invoking reflective method", e);
-            } catch (InvocationTargetException e) {
-                if (e.getCause() instanceof BroadcastInterruptionException) {
-                    throw (BroadcastInterruptionException) e.getCause();
-                }
-                throw new EventStudioException("Reflective method invocation exception", e);
+         * Reflective invocation of an annotated listener
+         *
+         * @author Andrea Vacondio
+         */
+        private record ReflectiveListenerWrapper(Object bean, Method method) implements ListenerWrapper {
+            private ReflectiveListenerWrapper(Object bean, Method method) {
+                this.bean = bean;
+                this.method = method;
+                this.method.setAccessible(true);
             }
-            event.notified();
+
+            public void onEvent(Envelope event) {
+                try {
+                    method.invoke(bean, event.getEvent());
+                } catch (IllegalAccessException e) {
+                    throw new EventStudioException("Exception invoking reflective method", e);
+                } catch (InvocationTargetException e) {
+                    if (e.getCause() instanceof BroadcastInterruptionException) {
+                        throw (BroadcastInterruptionException) e.getCause();
+                    }
+                    throw new EventStudioException("Reflective method invocation exception", e);
+                }
+                event.notified();
+            }
         }
-    }
 
     /**
      * Holder for a {@link ListenerWrapper}
@@ -262,7 +245,7 @@ class Listeners {
             // same priority
             int retVal = this.hashCode() - o.hashCode();
             // same hashcode but not equals. This shouldn't happen but according
-            // to hascode documentation is not required and since we don't want
+            // to hashcode documentation is not required and since we don't want
             // ListenerReferenceHolder to
             // disappear from the TreeSet we return an arbitrary integer != from
             // 0

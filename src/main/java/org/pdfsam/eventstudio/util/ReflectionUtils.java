@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
- * Utility class used to infer the parameter type of an input method of an input class
+ * Utility class used to infer the parameter type of input method of an input class
  * 
  * @author Andrea Vacondio
  * 

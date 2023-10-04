@@ -156,14 +156,14 @@ public class DefaultEventStudioTest {
     public void SupervisorHidden() {
         victim.supervisor(supervisor);
         verify(stations).getStation(DefaultEventStudio.HIDDEN_STATION);
-        verify(hidden).supervior(supervisor);
+        verify(hidden).supervisor(supervisor);
     }
 
     @Test
     public void Supervisor() {
         victim.supervisor(supervisor, STATION);
         verify(stations).getStation(STATION);
-        verify(station).supervior(supervisor);
+        verify(station).supervisor(supervisor);
     }
 
     @Test

@@ -45,14 +45,14 @@ public interface EventStudio {
 
     /**
      * Adds the given {@link Listener}, listening for the given event class, to the given station using default priority(0) ad default strength {@link ReferenceStrength#STRONG}.
-     * This add method is useful when a listener can listen for a hierarchy of events.
+     * This adds method is useful when a listener can listen for a hierarchy of events.
      * 
      * @see EventStudio#add(Class, Listener, String, int, ReferenceStrength)
      */
     <T> void add(Class<T> eventClass, Listener<T> listener, String station);
 
     /**
-     * Adds the given {@link Listener}, listening for the given event class, to the given station using the given priority (low values mean higher priority) and strength. This add
+     * Adds the given {@link Listener}, listening for the given event class, to the given station using the given priority (low values mean higher priority) and strength. This adds
      * method is useful when a listener can listen for a hierarchy of events:
      * 
      * <pre>
@@ -78,7 +78,7 @@ public interface EventStudio {
     <T> void add(Class<T> eventClass, Listener<T> listener, String station, int priority, ReferenceStrength strength);
 
     /**
-     * Discovers annotated method on the the given bean and adds them as {@link Listener}s
+     * Discovers annotated method on the given bean and adds them as {@link Listener}s
      * 
      * @see org.pdfsam.eventstudio.annotation.EventListener
      * @see org.pdfsam.eventstudio.annotation.EventStation

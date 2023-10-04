@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A thread safe holder for {@link Station}. Provides methods to access to the {@link Station}s of the {@link EventStudio} creating a new one when requred.
+ * A thread safe holder for {@link Station}. Provides methods to access to the {@link Station}s of the {@link EventStudio} creating a new one when required.
  * 
  * @author Andrea Vacondio
  * 

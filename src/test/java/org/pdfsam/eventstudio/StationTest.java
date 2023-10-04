@@ -103,7 +103,7 @@ public class StationTest {
     public void supervisor() {
         Supervisor supervisor = mock(Supervisor.class);
         Object event = new Object();
-        victim.supervior(supervisor);
+        victim.supervisor(supervisor);
         victim.broadcast(event);
         verify(supervisor).inspect(event);
     }
