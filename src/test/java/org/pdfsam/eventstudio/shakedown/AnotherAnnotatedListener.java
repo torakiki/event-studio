@@ -33,11 +33,11 @@ public class AnotherAnnotatedListener {
 
     @EventListener
     public void listener(MyEvent event) {
-        System.out.println(new Random().nextInt());
+        //noop
     }
 
     @EventListener(station = "anotherStation", priority = 2, strength = ReferenceStrength.SOFT)
     public void anotherListener(OtherMyEvent event) {
-        System.out.println(new Random().nextInt());
+        //noop
     }
 }
