@@ -5,7 +5,7 @@
     <artifactId>eventstudio</artifactId>
     <packaging>jar</packaging>
     <name>eventstudio</name>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.1</version>
 
     <description>A simple even bus implementation providing pub/sub event exchange between components</description>
     <url>https://pdfsam.org</url>
@@ -37,7 +37,7 @@
         <connection>scm:git:git@github.com:torakiki/event-studio.git</connection>
         <developerConnection>scm:git:git@github.com:torakiki/event-studio.git</developerConnection>
         <url>scm:git:git@github.com:torakiki/event-studio.git</url>
-        <tag>v2.0.0</tag>
+        <tag>v4.0.1</tag>
     </scm>
 
     <developers>
