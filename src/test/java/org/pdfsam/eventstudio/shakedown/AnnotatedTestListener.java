@@ -30,11 +30,11 @@ public class AnnotatedTestListener {
 
     @EventListener(priority = 1)
     public void first(AnotherMyEvent event) {
-        System.out.println(new Random().nextInt());
+        //noop
     }
 
     @EventListener(priority = 2, strength = ReferenceStrength.WEAK)
     public void second(MyEvent event) {
-        System.out.println(new Random().nextInt());
+        //noop
     }
 }

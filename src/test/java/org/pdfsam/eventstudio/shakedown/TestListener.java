@@ -29,7 +29,7 @@ public class TestListener implements Listener<MyEvent> {
 
     private Random rand = new Random();
     public void onEvent(MyEvent event) {
-        System.out.println(rand.nextInt());
+       //noop
     }
 
 }
