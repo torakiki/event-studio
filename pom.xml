@@ -5,7 +5,7 @@
     <artifactId>eventstudio</artifactId>
     <packaging>jar</packaging>
     <name>eventstudio</name>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.1</version>
 
     <description>A simple even bus implementation providing pub/sub event exchange between components</description>
     <url>https://pdfsam.org</url>
