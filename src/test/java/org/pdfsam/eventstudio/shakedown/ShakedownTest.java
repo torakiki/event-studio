@@ -1,23 +1,27 @@
-/* 
+/*
  * This file is part of the EventStudio source code
  * Created on 20/nov/2013
  *  Copyright 2020 by Sober Lemur S.r.l. (info@pdfsam.org).
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.pdfsam.eventstudio.shakedown;
 
-import static org.pdfsam.eventstudio.StaticStudio.eventStudio;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.pdfsam.eventstudio.DefaultEventStudio;
+import org.pdfsam.eventstudio.ReferenceStrength;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,15 +33,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.pdfsam.eventstudio.DefaultEventStudio;
-import org.pdfsam.eventstudio.ReferenceStrength;
+import static org.pdfsam.eventstudio.StaticStudio.eventStudio;
 
 /**
  * @author Andrea Vacondio
- * 
+ *
  */
 public class ShakedownTest {
 
@@ -45,7 +45,7 @@ public class ShakedownTest {
     private List<String> stations = new ArrayList<>();
     private Set<Callable<Void>> tasks = new HashSet<>();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stations.add("station");
         stations.add("anotherStation");
@@ -65,7 +65,7 @@ public class ShakedownTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws InterruptedException {
         executor.shutdown();
         executor.awaitTermination(5 * 60, TimeUnit.SECONDS);

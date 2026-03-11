@@ -1,38 +1,39 @@
-/* 
+/*
  * This file is part of the EventStudio source code
  * Created on 16/nov/2013
  *  Copyright 2020 by Sober Lemur S.r.l. (info@pdfsam.org).
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.pdfsam.eventstudio;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.pdfsam.eventstudio.Annotations.ReflectiveListenerDescriptor;
 import org.pdfsam.eventstudio.Annotations.ReflectiveMetadata;
 import org.pdfsam.eventstudio.annotation.EventListener;
 import org.pdfsam.eventstudio.annotation.EventStation;
 import org.pdfsam.eventstudio.exception.EventStudioException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * @author Andrea Vacondio
- * 
+ *
  */
 public class AnnotationsTest {
 
@@ -64,14 +65,14 @@ public class AnnotationsTest {
         assertEquals(0, metadata.getDescriptors().size());
     }
 
-    @Test(expected = EventStudioException.class)
-    public void wrongListener() throws IllegalAccessException, InvocationTargetException {
-        Annotations.process(new WrongListener());
+    @Test
+    public void wrongListener() {
+        assertThrows(EventStudioException.class, () -> Annotations.process(new WrongListener()));
     }
 
-    @Test(expected = EventStudioException.class)
-    public void wrongStation() throws IllegalAccessException, InvocationTargetException {
-        Annotations.process(new WrongStation());
+    @Test
+    public void wrongStation() {
+        assertThrows(EventStudioException.class, () -> Annotations.process(new WrongStation()));
     }
 
     @Test
@@ -137,8 +138,8 @@ public class AnnotationsTest {
     }
 
     public static class AnnotatedChildListener extends ParentListener {
-		@Override
-		@EventListener
+        @Override
+        @EventListener
         public void listen(String event) {
             // nothing
         }
@@ -148,6 +149,7 @@ public class AnnotationsTest {
             // nothing
         }
     }
+
     public static class WrongStation {
         @EventStation
         public String withParams(Object first) {

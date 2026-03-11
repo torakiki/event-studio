@@ -1,23 +1,36 @@
-/* 
+/*
  * This file is part of the EventStudio source code
  * Created on 14/nov/2013
  *  Copyright 2020 by Sober Lemur S.r.l. (info@pdfsam.org).
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.pdfsam.eventstudio;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
+import org.pdfsam.eventstudio.Annotations.ReflectiveMetadata;
+import org.pdfsam.eventstudio.annotation.EventListener;
+import org.pdfsam.eventstudio.exception.BroadcastInterruptionException;
+import org.pdfsam.eventstudio.exception.EventStudioException;
+
+import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -26,43 +39,24 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.pdfsam.eventstudio.Annotations.ReflectiveMetadata;
-import org.pdfsam.eventstudio.annotation.EventListener;
-import org.pdfsam.eventstudio.exception.BroadcastInterruptionException;
-import org.pdfsam.eventstudio.exception.EventStudioException;
-
 /**
  * @author Andrea Vacondio
- * 
+ *
  */
-@RunWith(MockitoJUnitRunner.class)
 public class StationTest {
 
     private Station victim;
-
-    @Mock
     private Listener<Object> mockListener;
-    @Mock
     private Listener<Object> anotherMockListener;
-    @Mock
-    private Object bean;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        victim = new Station("victim");
+        this.mockListener = mock(Listener.class);
+        this.anotherMockListener = mock(Listener.class);
+        this.victim = new Station("victim");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         victim.remove(mockListener);
         victim.remove(anotherMockListener);
@@ -74,29 +68,29 @@ public class StationTest {
         assertEquals("victim", victim.name());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addNullListener() {
-        victim.add(null, 0, ReferenceStrength.WEAK);
+        assertThrows(IllegalArgumentException.class, () -> victim.add(null, 0, ReferenceStrength.WEAK));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addNullListenerLong() {
-        victim.add(Object.class, null, 0, ReferenceStrength.WEAK);
+        assertThrows(IllegalArgumentException.class, () -> victim.add(Object.class, null, 0, ReferenceStrength.WEAK));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nullEvent() {
-        victim.add(null, mockListener, 0, ReferenceStrength.WEAK);
+        assertThrows(IllegalArgumentException.class, () -> victim.add(null, mockListener, 0, ReferenceStrength.WEAK));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nullBroadcastEvent() {
-        victim.broadcast(null);
+        assertThrows(IllegalArgumentException.class, () -> victim.broadcast(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nullAddAll() {
-        victim.addAll(bean, null);
+        assertThrows(IllegalArgumentException.class, () -> victim.addAll(new Object(), null));
     }
 
     @Test
@@ -203,16 +197,16 @@ public class StationTest {
         verify(mockListener, never()).onEvent(event);
     }
 
-    @Test(expected = EventStudioException.class)
+    @Test
     public void failingAdd() {
         SecondTestListener<String> listener = new SecondTestListener<>();
-        victim.add(listener, 0, ReferenceStrength.STRONG);
+        assertThrows(EventStudioException.class, () -> victim.add(listener, 0, ReferenceStrength.STRONG));
     }
 
-    @Test(expected = EventStudioException.class)
+    @Test
     public void failingRemove() {
         SecondTestListener<String> listener = new SecondTestListener<>();
-        victim.remove(listener);
+        assertThrows(EventStudioException.class, () -> victim.remove(listener));
     }
 
     @Test
