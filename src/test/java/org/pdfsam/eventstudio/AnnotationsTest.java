@@ -86,7 +86,7 @@ public class AnnotationsTest {
         ReflectiveMetadata metadata = Annotations.process(new ChildListener());
         List<ReflectiveListenerDescriptor> parentStation = metadata.getDescriptors().get("parentStation");
         assertEquals(1, parentStation.size());
-        assertEquals("inheritedListen", parentStation.get(0).method().getName());
+        assertEquals("inheritedListen", parentStation.getFirst().method().getName());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class AnnotationsTest {
         ReflectiveMetadata metadata = Annotations.process(new ChildListener());
         List<ReflectiveListenerDescriptor> childStation = metadata.getDescriptors().get("childStation");
         assertEquals(1, childStation.size());
-        assertEquals("privateListen", childStation.get(0).method().getName());
+        assertEquals("privateListen", childStation.getFirst().method().getName());
     }
 
     @Test
@@ -109,8 +109,8 @@ public class AnnotationsTest {
         ReflectiveMetadata metadata = Annotations.process(new AnnotatedChildListener());
         List<ReflectiveListenerDescriptor> hiddenStation = metadata.getDescriptors().get("");
         assertEquals(1, hiddenStation.size());
-        assertEquals("listen", hiddenStation.get(0).method().getName());
-        assertEquals(AnnotatedChildListener.class, hiddenStation.get(0).method().getDeclaringClass());
+        assertEquals("listen", hiddenStation.getFirst().method().getName());
+        assertEquals(AnnotatedChildListener.class, hiddenStation.getFirst().method().getDeclaringClass());
     }
 
     public static class ParentListener {

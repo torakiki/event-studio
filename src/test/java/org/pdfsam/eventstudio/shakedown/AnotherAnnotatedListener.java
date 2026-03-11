@@ -17,8 +17,6 @@
  */
 package org.pdfsam.eventstudio.shakedown;
 
-import java.util.Random;
-
 import org.pdfsam.eventstudio.ReferenceStrength;
 import org.pdfsam.eventstudio.annotation.EventListener;
 import org.pdfsam.eventstudio.annotation.EventStation;

@@ -111,7 +111,6 @@ final class Annotations {
     /**
      * @param bean the bean to be searched
      * @return a String value with the name of the station if an annotated field was found, null otherwise.
-     * @throws IllegalAccessException
      */
     private static String getStationNameFromFieldIfAny(Object bean) throws IllegalAccessException {
         for (Field field : bean.getClass().getDeclaredFields()) {
