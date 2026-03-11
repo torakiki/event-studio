@@ -47,7 +47,7 @@ public class ListenersTest {
     @Test
     public void add() {
         assertTrue(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
-        victim.add(TestEvent.class, new TestListener(), 0, ReferenceStrength.STRONG);
+        victim.add(TestEvent.class, new TestListener(), 0, ReferenceStrength.STRONG, false);
         assertFalse(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
         assertEquals(1, victim.nullSafeGetListeners(TestEvent.class).size());
     }
@@ -55,16 +55,16 @@ public class ListenersTest {
     @Test
     public void addSameListener() {
         TestListener listener = new TestListener();
-        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, listener, -1, ReferenceStrength.STRONG);
+        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, listener, -1, ReferenceStrength.STRONG, false);
         assertEquals(2, victim.nullSafeGetListeners(TestEvent.class).size());
     }
 
     @Test
     public void addManyDifferent() {
-        victim.add(AnotherTestEvent.class, new AnotherTestListener(), 0, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, new TestListener(), -1, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, new SecondTestListener(), -1, ReferenceStrength.STRONG);
+        victim.add(AnotherTestEvent.class, new AnotherTestListener(), 0, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, new TestListener(), -1, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, new SecondTestListener(), -1, ReferenceStrength.STRONG, false);
         assertEquals(2, victim.nullSafeGetListeners(TestEvent.class).size());
         assertEquals(1, victim.nullSafeGetListeners(AnotherTestEvent.class).size());
     }
@@ -73,7 +73,7 @@ public class ListenersTest {
     public void remove() {
         TestListener listener = new TestListener();
         assertTrue(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
-        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG);
+        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG, false);
         assertFalse(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
         victim.remove(TestEvent.class, listener);
         assertTrue(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
@@ -84,9 +84,9 @@ public class ListenersTest {
         TestListener listener = new TestListener();
         SecondTestListener listener2 = new SecondTestListener();
         AnotherTestListener anotherListener = new AnotherTestListener();
-        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, listener2, 0, ReferenceStrength.WEAK);
-        victim.add(AnotherTestEvent.class, anotherListener, 0, ReferenceStrength.SOFT);
+        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, listener2, 0, ReferenceStrength.WEAK, false);
+        victim.add(AnotherTestEvent.class, anotherListener, 0, ReferenceStrength.SOFT, false);
         assertFalse(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
         assertFalse(victim.nullSafeGetListeners(AnotherTestEvent.class).isEmpty());
         assertTrue(victim.remove(TestEvent.class, listener2));
@@ -99,7 +99,7 @@ public class ListenersTest {
     public void removeHolder() {
         TestListener listener = new TestListener();
         assertTrue(victim.nullSafeGetListeners(TestEvent.class).isEmpty());
-        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG);
+        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG, false);
         for (ListenerReferenceHolder holder : victim.nullSafeGetListeners(TestEvent.class)) {
             assertTrue(victim.remove(TestEvent.class, holder));
         }
@@ -110,7 +110,7 @@ public class ListenersTest {
     public void falseRemove() {
         TestListener listener = new TestListener();
         AnotherTestListener anotherListener = new AnotherTestListener();
-        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG);
+        victim.add(TestEvent.class, listener, 0, ReferenceStrength.STRONG, false);
         assertFalse(victim.remove(AnotherTestEvent.class, anotherListener));
     }
 
@@ -127,16 +127,16 @@ public class ListenersTest {
         TestListener prio7 = new TestListener();
         TestListener prio8 = new TestListener();
         TestListener prio9 = new TestListener();
-        victim.add(TestEvent.class, prio7, 7, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio9, 9, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio0, 0, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio1, 1, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio2, 2, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio5, 5, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio6, 6, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio8, 8, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio3, 3, ReferenceStrength.STRONG);
-        victim.add(TestEvent.class, prio4, 4, ReferenceStrength.STRONG);
+        victim.add(TestEvent.class, prio7, 7, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio9, 9, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio0, 0, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio1, 1, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio2, 2, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio5, 5, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio6, 6, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio8, 8, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio3, 3, ReferenceStrength.STRONG, false);
+        victim.add(TestEvent.class, prio4, 4, ReferenceStrength.STRONG, false);
         ReflectiveTestListener bean = new ReflectiveTestListener();
         ReflectiveMetadata metadata = Annotations.process(bean);
         for (List<ReflectiveListenerDescriptor> descriptors : metadata.getDescriptors().values()) {

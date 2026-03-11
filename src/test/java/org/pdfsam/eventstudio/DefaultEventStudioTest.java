@@ -68,56 +68,70 @@ public class DefaultEventStudioTest {
     public void addHiddenStation() {
         victim.add(listener);
         verify(stations).getStation(DefaultEventStudio.HIDDEN_STATION);
-        verify(hidden).add(listener, 0, ReferenceStrength.STRONG);
+        verify(hidden).add(listener, 0, ReferenceStrength.STRONG, false);
     }
 
     @Test
     public void addHiddenStationWithEventClass() {
         victim.add(Object.class, listener);
         verify(stations).getStation(DefaultEventStudio.HIDDEN_STATION);
-        verify(hidden).add(Object.class, listener, 0, ReferenceStrength.STRONG);
+        verify(hidden).add(Object.class, listener, 0, ReferenceStrength.STRONG, false);
     }
 
     @Test
     public void addStation() {
         victim.add(listener, STATION);
         verify(stations).getStation(STATION);
-        verify(station).add(listener, 0, ReferenceStrength.STRONG);
+        verify(station).add(listener, 0, ReferenceStrength.STRONG, false);
     }
 
     @Test
     public void addStationWithEventClass() {
         victim.add(Object.class, listener, STATION);
         verify(stations).getStation(STATION);
-        verify(station).add(Object.class, listener, 0, ReferenceStrength.STRONG);
+        verify(station).add(Object.class, listener, 0, ReferenceStrength.STRONG, false);
     }
 
     @Test
     public void addHiddenStationWithPriority() {
         victim.add(listener, 1, ReferenceStrength.SOFT);
         verify(stations).getStation(DefaultEventStudio.HIDDEN_STATION);
-        verify(hidden).add(listener, 1, ReferenceStrength.SOFT);
+        verify(hidden).add(listener, 1, ReferenceStrength.SOFT, false);
     }
 
     @Test
     public void addHiddenStationWithPriorityAndEventClass() {
         victim.add(Object.class, listener, 1, ReferenceStrength.SOFT);
         verify(stations).getStation(DefaultEventStudio.HIDDEN_STATION);
-        verify(hidden).add(Object.class, listener, 1, ReferenceStrength.SOFT);
+        verify(hidden).add(Object.class, listener, 1, ReferenceStrength.SOFT, false);
     }
 
     @Test
     public void addStationWithPriority() {
         victim.add(listener, STATION, 1, ReferenceStrength.SOFT);
         verify(stations).getStation(STATION);
-        verify(station).add(listener, 1, ReferenceStrength.SOFT);
+        verify(station).add(listener, 1, ReferenceStrength.SOFT, false);
+    }
+
+    @Test
+    public void addStationWithPriorityAndOnce() {
+        victim.add(listener, STATION, 1, ReferenceStrength.SOFT, true);
+        verify(stations).getStation(STATION);
+        verify(station).add(listener, 1, ReferenceStrength.SOFT, true);
     }
 
     @Test
     public void addStationWithPriorityAndEventClass() {
         victim.add(Object.class, listener, STATION, 1, ReferenceStrength.SOFT);
         verify(stations).getStation(STATION);
-        verify(station).add(Object.class, listener, 1, ReferenceStrength.SOFT);
+        verify(station).add(Object.class, listener, 1, ReferenceStrength.SOFT, false);
+    }
+
+    @Test
+    public void addStationWithPriorityAndEventClassAndOnce() {
+        victim.add(Object.class, listener, STATION, 1, ReferenceStrength.SOFT, true);
+        verify(stations).getStation(STATION);
+        verify(station).add(Object.class, listener, 1, ReferenceStrength.SOFT, true);
     }
 
     @Test

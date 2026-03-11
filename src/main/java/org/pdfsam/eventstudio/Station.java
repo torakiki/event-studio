@@ -1,33 +1,21 @@
-/* 
+/*
  * This file is part of the EventStudio source code
  * Created on 09/nov/2013
  *  Copyright 2020 by Sober Lemur S.r.l. (info@pdfsam.org).
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.pdfsam.eventstudio;
-
-import static org.pdfsam.eventstudio.EventStudio.MAX_QUEUE_SIZE_PROP;
-import static org.pdfsam.eventstudio.util.ReflectionUtils.inferParameterClass;
-import static org.pdfsam.eventstudio.util.RequireUtils.requireNotBlank;
-import static org.pdfsam.eventstudio.util.RequireUtils.requireNotNull;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.pdfsam.eventstudio.Annotations.ReflectiveListenerDescriptor;
 import org.pdfsam.eventstudio.Listeners.ListenerReferenceHolder;
@@ -37,11 +25,24 @@ import org.pdfsam.eventstudio.exception.EventStudioException;
 import org.pdfsam.eventstudio.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static org.pdfsam.eventstudio.EventStudio.MAX_QUEUE_SIZE_PROP;
+import static org.pdfsam.eventstudio.util.ReflectionUtils.inferParameterClass;
+import static org.pdfsam.eventstudio.util.RequireUtils.requireNotBlank;
+import static org.pdfsam.eventstudio.util.RequireUtils.requireNotNull;
+
 /**
  * A {@link Station} is a place where broadcaster events are actually transmitted to the registered {@link Listener}s
- * 
+ *
  * @author Andrea Vacondio
- * 
+ *
  */
 class Station {
 
@@ -61,7 +62,7 @@ class Station {
         BlockingQueue<Object> queue = queues.get(clazz);
         if (queue == null) {
             final BlockingQueue<Object> value = new LinkedBlockingQueue<>(Integer.getInteger(MAX_QUEUE_SIZE_PROP,
-                    Integer.MAX_VALUE));
+                                                                                             Integer.MAX_VALUE));
             queue = queues.putIfAbsent(clazz, value);
             if (queue == null) {
                 queue = value;
@@ -92,7 +93,7 @@ class Station {
             if (listener != null) {
                 LOG.trace("{}: Notifying event {} to {}", this, event, listener);
                 listener.onEvent(enveloped);
-                if(holder.once){
+                if (holder.once) {
                     LOG.debug("{}: Removing once listener", this);
                     listeners.remove(event.getClass(), holder);
                 }
@@ -110,21 +111,21 @@ class Station {
         return enveloped.isNotified();
     }
 
-    <T> void add(Listener<T> listener, int priority, ReferenceStrength strength) {
+    <T> void add(Listener<T> listener, int priority, ReferenceStrength strength, boolean once) {
         requireNotNull(listener);
         @SuppressWarnings("unchecked")
         Class<T> eventClass = ReflectionUtils.inferParameterClass(listener.getClass(), "onEvent");
         if (eventClass == null) {
             throw new EventStudioException("Unable to infer the listened event class.");
         }
-        add(eventClass, listener, priority, strength);
+        add(eventClass, listener, priority, strength, once);
     }
 
-    <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
+    <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength, boolean once) {
         requireNotNull(eventClass);
         requireNotNull(listener);
         LOG.debug("{}: Adding listener {} [priority={} strength={}]", this, listener, priority, strength);
-        listeners.add(eventClass, listener, priority, strength);
+        listeners.add(eventClass, listener, priority, strength, once);
         broadcastEnqueuedEventsFor(eventClass);
     }
 

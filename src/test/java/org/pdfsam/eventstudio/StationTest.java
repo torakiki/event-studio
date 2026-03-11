@@ -70,17 +70,17 @@ public class StationTest {
 
     @Test
     public void addNullListener() {
-        assertThrows(IllegalArgumentException.class, () -> victim.add(null, 0, ReferenceStrength.WEAK));
+        assertThrows(IllegalArgumentException.class, () -> victim.add(null, 0, ReferenceStrength.WEAK, false));
     }
 
     @Test
     public void addNullListenerLong() {
-        assertThrows(IllegalArgumentException.class, () -> victim.add(Object.class, null, 0, ReferenceStrength.WEAK));
+        assertThrows(IllegalArgumentException.class, () -> victim.add(Object.class, null, 0, ReferenceStrength.WEAK, false));
     }
 
     @Test
     public void nullEvent() {
-        assertThrows(IllegalArgumentException.class, () -> victim.add(null, mockListener, 0, ReferenceStrength.WEAK));
+        assertThrows(IllegalArgumentException.class, () -> victim.add(null, mockListener, 0, ReferenceStrength.WEAK, false));
     }
 
     @Test
@@ -105,11 +105,22 @@ public class StationTest {
     @Test
     public void addAndBroadcast() {
         Object event = new Object();
-        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
-        victim.add(Object.class, anotherMockListener, 0, ReferenceStrength.STRONG);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
+        victim.add(Object.class, anotherMockListener, 0, ReferenceStrength.STRONG, false);
         victim.broadcast(event);
         verify(mockListener).onEvent(event);
         verify(anotherMockListener).onEvent(event);
+    }
+
+    @Test
+    public void addAndBroadcastOnce() {
+        Object event = new Object();
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
+        victim.add(Object.class, anotherMockListener, 0, ReferenceStrength.STRONG, true);
+        victim.broadcast(event);
+        victim.broadcast(event);
+        verify(mockListener, times(2)).onEvent(event);
+        verify(anotherMockListener, times(1)).onEvent(event);
     }
 
     @Test
@@ -142,8 +153,8 @@ public class StationTest {
     public void priority() {
         Object event = new Object();
         InOrder inOrder = Mockito.inOrder(anotherMockListener, mockListener);
-        victim.add(mockListener, 0, ReferenceStrength.STRONG);
-        victim.add(anotherMockListener, -1, ReferenceStrength.STRONG);
+        victim.add(mockListener, 0, ReferenceStrength.STRONG, false);
+        victim.add(anotherMockListener, -1, ReferenceStrength.STRONG, false);
         victim.broadcast(event);
         inOrder.verify(anotherMockListener).onEvent(event);
         inOrder.verify(mockListener).onEvent(event);
@@ -153,8 +164,8 @@ public class StationTest {
     public void broadcastInterrupted() {
         Object event = new Object();
         doThrow(BroadcastInterruptionException.class).when(anotherMockListener).onEvent(any());
-        victim.add(mockListener, 0, ReferenceStrength.STRONG);
-        victim.add(anotherMockListener, -1, ReferenceStrength.STRONG);
+        victim.add(mockListener, 0, ReferenceStrength.STRONG, false);
+        victim.add(anotherMockListener, -1, ReferenceStrength.STRONG, false);
         victim.broadcast(event);
         verify(anotherMockListener).onEvent(event);
         verify(mockListener, never()).onEvent(event);
@@ -165,7 +176,7 @@ public class StationTest {
         Object event = new Object();
         victim.broadcast(event);
         victim.broadcast(event);
-        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
         verify(mockListener, times(2)).onEvent(event);
     }
 
@@ -196,7 +207,7 @@ public class StationTest {
     @Test
     public void removeAndBroadcast() {
         Object event = new Object();
-        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
         victim.remove(mockListener);
         victim.broadcast(event);
         verify(mockListener, never()).onEvent(event);
@@ -205,7 +216,7 @@ public class StationTest {
     @Test
     public void removeExplicitAndBroadcast() {
         Object event = new Object();
-        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
         victim.remove(Object.class, mockListener);
         victim.broadcast(event);
         verify(mockListener, never()).onEvent(event);
@@ -214,7 +225,7 @@ public class StationTest {
     @Test
     public void failingAdd() {
         SecondTestListener<String> listener = new SecondTestListener<>();
-        assertThrows(EventStudioException.class, () -> victim.add(listener, 0, ReferenceStrength.STRONG));
+        assertThrows(EventStudioException.class, () -> victim.add(listener, 0, ReferenceStrength.STRONG, false));
     }
 
     @Test
@@ -232,7 +243,7 @@ public class StationTest {
         victim.broadcast(new Object());
         victim.broadcast(new Object());
         victim.broadcast(new Object());
-        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
         verify(mockListener, times(3)).onEvent(any(Object.class));
     }
 

@@ -49,11 +49,11 @@ class Listeners {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Map<Class<?>, TreeSet<ListenerReferenceHolder>> listeners = new HashMap<>();
 
-    <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength) {
+    <T> void add(Class<T> eventClass, Listener<T> listener, int priority, ReferenceStrength strength, boolean once) {
         lock.writeLock().lock();
         try {
             TreeSet<ListenerReferenceHolder> set = nullSafeGetListenerHolders(eventClass);
-            set.add(new ListenerReferenceHolder(priority, strength.getReference(new DefaultListenerWrapper(listener))));
+            set.add(new ListenerReferenceHolder(priority, once, strength.getReference(new DefaultListenerWrapper(listener))));
         } finally {
             lock.writeLock().unlock();
         }
@@ -170,56 +170,56 @@ class Listeners {
     }
 
     /**
-         * Listener wrapper around an explicitly defined {@link Listener}
-         *
-         * @author Andrea Vacondio
-         */
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        private record DefaultListenerWrapper(Listener wrapped) implements ListenerWrapper {
+     * Listener wrapper around an explicitly defined {@link Listener}
+     *
+     * @author Andrea Vacondio
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private record DefaultListenerWrapper(Listener wrapped) implements ListenerWrapper {
 
-            public void onEvent(Envelope event) {
-                wrapped.onEvent(event.getEvent());
-                event.notified();
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o) {
-                    return true;
-                }
-                if (!(o instanceof DefaultListenerWrapper other)) {
-                    return false;
-                }
-                return wrapped.equals(other.wrapped);
-            }
+        public void onEvent(Envelope event) {
+            wrapped.onEvent(event.getEvent());
+            event.notified();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof DefaultListenerWrapper other)) {
+                return false;
+            }
+            return wrapped.equals(other.wrapped);
+        }
+    }
 
     /**
-         * Reflective invocation of an annotated listener
-         *
-         * @author Andrea Vacondio
-         */
-        private record ReflectiveListenerWrapper(Object bean, Method method) implements ListenerWrapper {
-            private ReflectiveListenerWrapper(Object bean, Method method) {
-                this.bean = bean;
-                this.method = method;
-                this.method.setAccessible(true);
-            }
-
-            public void onEvent(Envelope event) {
-                try {
-                    method.invoke(bean, event.getEvent());
-                } catch (IllegalAccessException e) {
-                    throw new EventStudioException("Exception invoking reflective method", e);
-                } catch (InvocationTargetException e) {
-                    if (e.getCause() instanceof BroadcastInterruptionException) {
-                        throw (BroadcastInterruptionException) e.getCause();
-                    }
-                    throw new EventStudioException("Reflective method invocation exception", e);
-                }
-                event.notified();
-            }
+     * Reflective invocation of an annotated listener
+     *
+     * @author Andrea Vacondio
+     */
+    private record ReflectiveListenerWrapper(Object bean, Method method) implements ListenerWrapper {
+        private ReflectiveListenerWrapper(Object bean, Method method) {
+            this.bean = bean;
+            this.method = method;
+            this.method.setAccessible(true);
         }
+
+        public void onEvent(Envelope event) {
+            try {
+                method.invoke(bean, event.getEvent());
+            } catch (IllegalAccessException e) {
+                throw new EventStudioException("Exception invoking reflective method", e);
+            } catch (InvocationTargetException e) {
+                if (e.getCause() instanceof BroadcastInterruptionException) {
+                    throw (BroadcastInterruptionException) e.getCause();
+                }
+                throw new EventStudioException("Reflective method invocation exception", e);
+            }
+            event.notified();
+        }
+    }
 
     /**
      * Holder for a {@link ListenerWrapper}
@@ -230,10 +230,6 @@ class Listeners {
         int priority = 0;
         boolean once;
         private final Entity<? extends ListenerWrapper> reference;
-
-        public ListenerReferenceHolder(int priority, Entity<? extends ListenerWrapper> reference) {
-            this(priority, false, reference);
-        }
 
         public ListenerReferenceHolder(int priority, boolean once, Entity<? extends ListenerWrapper> reference) {
             requireNotNull(reference);
