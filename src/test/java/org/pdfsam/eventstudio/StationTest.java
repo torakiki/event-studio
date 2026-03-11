@@ -125,6 +125,20 @@ public class StationTest {
     }
 
     @Test
+    public void annotatedAddAndBroadcastOnce() throws IllegalAccessException, InvocationTargetException {
+        Object event = new Object();
+        TestPrioritizedAnnotatedBean bean = new TestPrioritizedAnnotatedBean();
+        ReflectiveMetadata metadata = Annotations.process(bean);
+        TestPrioritizedAnnotatedBean spy = spy(bean);
+        victim.addAll(spy, metadata.getDescriptors().get(""));
+        victim.broadcast(event);
+        victim.broadcast(event);
+        verify(spy, times(2)).first(event);
+        verify(spy, times(2)).second(event);
+        verify(spy, times(1)).once(event);
+    }
+
+    @Test
     public void priority() {
         Object event = new Object();
         InOrder inOrder = Mockito.inOrder(anotherMockListener, mockListener);

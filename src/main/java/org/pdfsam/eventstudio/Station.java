@@ -92,8 +92,12 @@ class Station {
             if (listener != null) {
                 LOG.trace("{}: Notifying event {} to {}", this, event, listener);
                 listener.onEvent(enveloped);
+                if(holder.once){
+                    LOG.debug("{}: Removing once listener", this);
+                    listeners.remove(event.getClass(), holder);
+                }
             } else {
-                LOG.debug("{}: Removing garbage collected listener from the station", this);
+                LOG.debug("{}: Removing garbage collected listener", this);
                 listeners.remove(event.getClass(), holder);
             }
         }

@@ -17,7 +17,11 @@
  */
 package org.pdfsam.eventstudio;
 
-import static org.pdfsam.eventstudio.util.RequireUtils.requireNotNull;
+import org.pdfsam.eventstudio.Annotations.ReflectiveListenerDescriptor;
+import org.pdfsam.eventstudio.exception.BroadcastInterruptionException;
+import org.pdfsam.eventstudio.exception.EventStudioException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,11 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.pdfsam.eventstudio.Annotations.ReflectiveListenerDescriptor;
-import org.pdfsam.eventstudio.exception.BroadcastInterruptionException;
-import org.pdfsam.eventstudio.exception.EventStudioException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.pdfsam.eventstudio.util.RequireUtils.requireNotNull;
 
 /**
  * A thread-safe holder for the listeners
@@ -67,6 +67,7 @@ class Listeners {
                 Class<?> eventClass = current.method().getParameterTypes()[0];
                 TreeSet<ListenerReferenceHolder> set = nullSafeGetListenerHolders(eventClass);
                 set.add(new ListenerReferenceHolder(current.listenerAnnotation().priority(),
+                                                    current.listenerAnnotation().once(),
                                                     current.listenerAnnotation().strength()
                                                            .getReference(new ReflectiveListenerWrapper(bean, current.method()))));
                 updatedEventClasses.add(eventClass);
@@ -227,12 +228,18 @@ class Listeners {
      */
     static class ListenerReferenceHolder implements Comparable<ListenerReferenceHolder> {
         int priority = 0;
+        boolean once;
         private final Entity<? extends ListenerWrapper> reference;
 
         public ListenerReferenceHolder(int priority, Entity<? extends ListenerWrapper> reference) {
+            this(priority, false, reference);
+        }
+
+        public ListenerReferenceHolder(int priority, boolean once, Entity<? extends ListenerWrapper> reference) {
             requireNotNull(reference);
             this.priority = priority;
             this.reference = reference;
+            this.once = once;
         }
 
         public int compareTo(ListenerReferenceHolder o) {

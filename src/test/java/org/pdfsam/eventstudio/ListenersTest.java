@@ -61,7 +61,7 @@ public class ListenersTest {
     }
 
     @Test
-    public void addManyDiffenent() {
+    public void addManyDifferent() {
         victim.add(AnotherTestEvent.class, new AnotherTestListener(), 0, ReferenceStrength.STRONG);
         victim.add(TestEvent.class, new TestListener(), -1, ReferenceStrength.STRONG);
         victim.add(TestEvent.class, new SecondTestListener(), -1, ReferenceStrength.STRONG);

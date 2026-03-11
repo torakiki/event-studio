@@ -35,4 +35,8 @@ public class TestPrioritizedAnnotatedBean {
 
     }
 
+    @EventListener(once = true)
+    public void once(Object event) {
+
+    }
 }
