@@ -170,12 +170,6 @@ class Station {
      */
     String name() {
         return name;
-
-    }
-
-    @Deprecated
-    public void supervior(Supervisor supervisor) {
-        supervisor(supervisor);
     }
 
     public void supervisor(Supervisor supervisor) {
