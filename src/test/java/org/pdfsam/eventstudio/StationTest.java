@@ -223,6 +223,33 @@ public class StationTest {
     }
 
     @Test
+    public void clearEnqueuedRemovesPendingEvents() {
+        Object event = new Object();
+        victim.broadcast(event);
+        victim.clearEnqueuedEvents(Object.class);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
+        verify(mockListener, never()).onEvent(event);
+    }
+
+    @Test
+    public void clearEnqueuedOnEmptyQueue() {
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
+        victim.clearEnqueuedEvents(Object.class);
+        Object event = new Object();
+        victim.broadcast(event);
+        verify(mockListener).onEvent(event);
+    }
+
+    @Test
+    public void clearEnqueuedWhenNoQueueExists() {
+        victim.clearEnqueuedEvents(Object.class);
+        Object event = new Object();
+        victim.broadcast(event);
+        victim.add(Object.class, mockListener, 0, ReferenceStrength.STRONG, false);
+        verify(mockListener).onEvent(event);
+    }
+
+    @Test
     public void failingAdd() {
         SecondTestListener<String> listener = new SecondTestListener<>();
         assertThrows(EventStudioException.class, () -> victim.add(listener, 0, ReferenceStrength.STRONG, false));

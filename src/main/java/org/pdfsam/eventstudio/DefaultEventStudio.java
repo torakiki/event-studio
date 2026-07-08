@@ -214,6 +214,11 @@ public class DefaultEventStudio implements EventStudio {
     }
 
     @Override
+    public <T> void clearEnqueuedEvents(Class<T> eventClass, String station) {
+        stations.getStation(station).clearEnqueuedEvents(eventClass);
+    }
+
+    @Override
     public void broadcast(Object event, String station) {
         stations.getStation(station).broadcast(event);
     }

@@ -130,6 +130,12 @@ public interface EventStudio {
     void clear(String station);
 
     /**
+     * Removes all the enqueued events of the given class from the given station. This is useful when a listener is added to a station, and it should not be
+     * notified of events that have been broadcasted before its registration.
+     */
+    <T> void clearEnqueuedEvents(Class<T> eventClass, String station);
+
+    /**
      * Broadcasts the given event to the given station. {@link Listener}s listening the given station and bound to the event class will be notified.
      */
     void broadcast(Object event, String station);

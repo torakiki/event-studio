@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static java.util.Objects.nonNull;
 import static org.pdfsam.eventstudio.EventStudio.MAX_QUEUE_SIZE_PROP;
 import static org.pdfsam.eventstudio.util.ReflectionUtils.inferParameterClass;
 import static org.pdfsam.eventstudio.util.RequireUtils.requireNotBlank;
@@ -163,6 +164,14 @@ class Station {
         requireNotNull(listener);
         LOG.debug("{}: Removing listener {} [eventClass={}]", this, listener, eventClass);
         return listeners.remove(eventClass, listener);
+    }
+
+    <T> void clearEnqueuedEvents(Class<T> eventClass) {
+        BlockingQueue<Object> queue = queues.get(eventClass);
+        if (nonNull(queue)) {
+            LOG.debug("{}: removing queued {} events of type {}", this, queue.size(), eventClass);
+            queues.remove(eventClass);
+        }
     }
 
     /**

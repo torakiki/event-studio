@@ -194,6 +194,13 @@ public class DefaultEventStudioTest {
     }
 
     @Test
+    public void clearEnqueuedEvents() {
+        victim.clearEnqueuedEvents(Object.class, STATION);
+        verify(stations).getStation(STATION);
+        verify(station).clearEnqueuedEvents(Object.class);
+    }
+
+    @Test
     public void broadcastHidden() {
         victim.broadcast(event);
         verify(stations).getStation(DefaultEventStudio.HIDDEN_STATION);
