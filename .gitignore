@@ -20,3 +20,4 @@ target/
 *.ear
 /bin
 /build
+CLAUDE.md
